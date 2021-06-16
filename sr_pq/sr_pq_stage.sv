@@ -2,27 +2,26 @@
 //  Single stage for shift-register PQ
 //
 
-module sr_pq_stage  #(parameter KW=4, VW=4) (
+
+`include "../pk_pkg.sv"
+import pq_pkg::*;
+
+module sr_pq_stage (
     input logic clk, rst, push, pop, ki_lt_kprev, ki_lt_knext,
-    input logic [KW+VW-1:0] kvi, kvprev, kvnext,
-    output logic [KW+VW-1:0] kv,  // key stored in this stage
-    output logic ki_lt_k
+    input kv_t kvi,      // global key-valu input
+    input kv_t kvprev,   // from previous stage (for right shift on push)
+    input kv_t kvnext,   // from next stage (for left shift on pop)
+    output kv_t kv,      // key-value stored in this stage
+    output logic ki_lt_k // comparator output: input key < current key in this stage
     );
-    
-    parameter [KW-1:0] KEYINF = '1;
-    parameter [VW-1:0] VAL0 = '0;
 
-  logic unsigned [KW-1:0] k, ki;
-  assign k = kv[KW+VW-1:VW];
-  assign ki = kvi[KW+VW-1:VW];
-
-  assign ki_lt_k = (ki < k);
+  assign ki_lt_k = (kvi.key < kv.key);
 
   always_ff @(posedge clk)
     begin
       if (rst)
         begin
-          kv <= { KEYINF, VAL0 };
+          kv <= KV_EMPTY;
         end
       else if (pop && push)
         begin

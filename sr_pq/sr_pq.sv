@@ -2,30 +2,35 @@
 //
 //
 
-module sr_pq #(parameter KW=4, VW=4, DEPTH=4) (
-  input logic clk, rst, push, pop,
-  input logic [KW+VW-1:0] kvi,
-  output logic [KW+VW-1:0] kvo,  // lowest element in queue
-  output logic full, empty
-  );
-   parameter [KW-1:0] KEYINF = '1;
-   parameter [VW-1:0] VAL0 = '0;
+`include "../pk_pkg.sv"
+import pq_pkg::*;
+
+module sr_pq (
+  pq_int.pq_devint di
+);
+
+logic clk;
+
+assign clk = di.clk;
+
+  
+  logic full, empty;
   
 
-   logic [0:DEPTH+1] ki_lt_k_v;        // vector of comparator outputs
-   logic [0:DEPTH+1][KW+VW-1:0] kv_v;  // vector of stored key-value pairs
+   logic [0:PQ_CAPACITY+1] ki_lt_k_v;        // vector of comparator outputs
+   kv_t [0:PQ_CAPACITY+1]  kv_v;  // vector of stored key-value pairs
 
    assign ki_lt_k_v[0] = 0;   
-   assign ki_lt_k_v[DEPTH+1] = 1;
-   assign kv_v[0] = kvi;
-   assign kv_v[DEPTH+1] = { KEYINF, VAL0 };
+   assign ki_lt_k_v[PQ_CAPACITY+1] = 1;
+   assign kv_v[0] = di.idata;
+   assign kv_v[DEPTH+1].key = KEYINF;
    assign kvo = kv_v[1];
 
-   assign empty = (kv_v[1][KW+VW-1:VW] == KEYINF);
-   assign full = (kv_v[DEPTH][KW+VW-1:VW] != KEYINF);
+   assign empty = (kv_v.key == KEYINF);
+   assign full = (kv_v[DEPTH].key != KEYINF);
 
    genvar i;
-   generate for (i=1; i<=DEPTH; i++) begin
+   generate for (i=1; i<=PQ_CAPACITY; i++) begin
        sr_pq_stage  #(.KW(KW), .VW(VW)) U_STAGE (
           .clk, .rst, .push, .pop,
           .ki_lt_kprev(ki_lt_k_v[i-1]), 
