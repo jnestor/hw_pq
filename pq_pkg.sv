@@ -11,8 +11,8 @@
 //-----------------------------------------------------------------------------
 
 `ifndef PQ_PKG
-    `define PQ_PKG
-    
+`define PQ_PKG
+
 package pq_pkg;
 
     // struct data type for <key,value> pairs
@@ -20,15 +20,15 @@ package pq_pkg;
     parameter KEY_WIDTH=4;
     parameter VAL_WIDTH=4;
     parameter PQ_CAPACITY=4;
-    
-   parameter [KEY_WIDTH-1:0] KEYINF = '1;
-   parameter [VAL_WIDTH-1:0] VAL0 = '0;
+
+    parameter [KEY_WIDTH-1:0] KEYINF = '1;
+    parameter [VAL_WIDTH-1:0] VAL0 = '0;
 
     typedef struct packed {
-    logic [KEY_WIDTH-1:0] key;    // priority value
-    logic [VAL_WIDTH-1:0] value;  // data payload
+        logic [KEY_WIDTH-1:0] key;    // priority value
+        logic [VAL_WIDTH-1:0] value;  // data payload
     } kv_t;
-    
+
     parameter kv_t KV_EMPTY = {KEYINF, VAL0};
 
 endpackage

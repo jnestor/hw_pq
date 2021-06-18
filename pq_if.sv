@@ -12,7 +12,7 @@
 `include "../pq_pkg.sv"
 import pq_pkg::*;
 
-    interface pq_int (input logic clk, rst);
+    interface pq_if (input logic clk, rst);
         logic ivalid;
         logic irdy;
         logic busy;
@@ -23,7 +23,7 @@ import pq_pkg::*;
         kv_t odata;
 
         // used to implement a device
-        modport pq_devint (
+        modport dev (
         input ivalid,
         output irdy,
         input idata,
@@ -35,7 +35,7 @@ import pq_pkg::*;
         ) ;
 
         // use to connect to a device
-        modport pq_clint(
+        modport client (
         output ivalid,
         input irdy,
         output idata,
@@ -47,4 +47,3 @@ import pq_pkg::*;
         ) ;
 
     endinterface
-
