@@ -3,7 +3,7 @@
 //
 
 
-`include "../pk_pkg.sv"
+//`include "../pk_pkg.sv"
 import pq_pkg::*;
 
 module sr_pq_stage (

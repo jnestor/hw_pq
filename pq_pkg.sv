@@ -22,6 +22,7 @@ package pq_pkg;
     parameter PQ_CAPACITY=4;
 
     parameter [KEY_WIDTH-1:0] KEYINF = '1;
+    parameter [KEY_WIDTH-1:0] KEY0 = '0;
     parameter [VAL_WIDTH-1:0] VAL0 = '0;
 
     typedef struct packed {
