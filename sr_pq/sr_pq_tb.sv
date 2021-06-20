@@ -3,44 +3,50 @@ import pq_pkg::*;
 
 module sr_pq_tb (pq_if.tb ti);
 
+    task push(input logic [KEY_WIDTH-1:0] key, input logic [VAL_WIDTH-1:0] val);
+        assert(irdy==1);
+        ti.idata <= {key,val};
+        ti.ivalid <= 1;
+        ti.ordy <= 0;
+        @ti.cb;
+        ti.ivald <=0;
+    endtask
+
+    task pop()
+        assert(ovalid==1);
+        ti.ivalid <= 0;
+        ti.ordy <= 1;
+    endtask
+
+    task push_and_pop(input logic [KEY_WIDTH-1:0] key, input logic [VAL_WIDTH-1:0] val);
+        // need to check irdy, ovalid here
+        assert (irdy==1 && ovalid==1);
+        ti.data <= {key,val};
+        ti.ivalid <= 1;
+        ti.ordy <= 1;
+        @ti.cb;
+        ti.ivalid <= 0;
+        ti.ordy <= 0;
+    endtask
+
   initial begin
       ti.rst <= 1;
+      ti.ivalid <= 0;
       ti.ordy <= 0;
       @ti.cb;
       ti.rst <= 0;
+      push(8,14);
+      push (12,12);
       @(ti.cb);
-      ti.idata <= {4'd4,4'd14};
-      ti.ivalid <= 1;
+      push(3,13);
+      push(10,10);
+      @ti.cb;  // shoud register full here
+      pop();
+      push(2,13);
+      @ti.cb;  // should register full again
+      push_and_pop(1,11);
       @ti.cb;
-      ti.ivalid <= 0;
-      @ti.cb;
-      ti.idata <= {4'd12,4'd12};
-      ti.ivalid <= 1;
-      @ti.cb;
-      ti.idata <= {4'd3,4'd13};
-      @ti.cb;
-      ti.idata <= {4'd1,4'd11};
-      @ti.cb;
-      ti.ivalid <= 0;
-      @ti.cb;
-      ti.ordy <= 1;
-      repeat (3) @ti.cb;
-      ti.ordy <= 0;
-      @ti.cb;
-      ti.ordy <= 1;
-      @ti.cb;
-      ti.ordy <= 0;
-      @ti.cb;
-      ti.idata <= {4'd5,4'd15};
-      ti.ivalid <= 1;
-      @ti.cb;
-      // try inserting and removing at same time
-      ti.idata <= {4'd1,4'd11};
-      ti.ordy <= 1;
-      @ti.cb;
-      ti.ordy <= 0;
-      ti.ivalid <= 0;
-      @ti.cb;
+      repeat(4) pop();
       $stop;
   end
 

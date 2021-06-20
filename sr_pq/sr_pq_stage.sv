@@ -15,6 +15,8 @@ module sr_pq_stage (
     output logic ki_lt_k // comparator output: input key < current key in this stage
     );
 
+    parameter STAGE = 0;  // should be overriden when instantiating
+
   assign ki_lt_k = (kvi.key < kv.key);
 
   always_ff @(posedge clk)
@@ -29,7 +31,7 @@ module sr_pq_stage (
                 begin  // shift left
                     kv <= kvnext;
                 end
-            else if (!ki_lt_k && ki_lt_knext)
+            else if ((!ki_lt_k || (STAGE==1)) && ki_lt_knext) // always remove 1st stage
                 begin  // insert here for simultaneous push, pop
                     kv <= kvi;
                 end  // otherwise, this stage doesnt' change
