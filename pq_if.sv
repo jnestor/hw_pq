@@ -14,63 +14,44 @@ import pq_pkg::*;
 
     interface pq_if (input logic clk);
         logic rst;
-        logic ivalid;
-        logic irdy;
-        logic busy;
+        kv_t kvi;
+        logic enq;
         logic full;
-        kv_t idata;
-        logic ovalid;
-        logic ordy;
-        kv_t odata;
+        logic busy;
+        logic empty;
+        kv_t kvo;
+        logic deq;
 
-        clocking cb @(posedge clk);
-            output rst, ivalid, idata;
-            input irdy;
-            input busy, full;
-            input ovalid, odata;
-            output ordy;
-        endclocking
+        kv_t odata;
 
         // used to implement a device
         modport dev (
-        input clk,
-        input rst,
-        input ivalid,
-        output irdy,
-        input idata,
-        output busy,
-        output full,
-        output ovalid,
-        input ordy,
-        output odata
+            input clk, rst,
+            input kvi, enq, deq,
+            output full, busy, empty, kvo
         ) ;
 
         // use to connect to a device
         modport client (
-        input clk,
-        input rst,
-        output ivalid,
-        input irdy,
-        output idata,
-        input busy,
-        input full,
-        input ovalid,
-        output ordy,
-        input odata
+            input clk, rst,
+            output kvi, enq, deq,
+            input full, busy, empty, kvo
         ) ;
-        
+
+        clocking cb @(posedge clk);
+            default output #1;
+            output  rst, enq, kvi;
+            input full, busy, empty;
+            output kvo;
+            output  deq;
+        endclocking
+
         // use to connect to a testbench
         modport tb (
-        clocking cb,
-        output rst,
-        output ivalid,
-        input irdy,
-        output idata,
-        input busy,
-        input full,
-        input ovalid,
-        output ordy,
-        input odata
+            clocking cb,
+            output rst,
+            output kvi, enq, deq,
+            input full, busy, empty, kvo
         ) ;
 
     endinterface
