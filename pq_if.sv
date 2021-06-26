@@ -1,13 +1,12 @@
 //-----------------------------------------------------------------------------
-// Package Name   : pq_pkg
+// Interface Name  : pq_if
 // Project       : HWPQ: Hardware Priority Queue Study
 //-----------------------------------------------------------------------------
 // Author        : John Nestor
-// Created       : June 15, 2021
+// Created       : June 24, 2021
 //-----------------------------------------------------------------------------
-// Description   : Package defining data types and standard interface
-//                 for hardware priority queues.  This package will be
-//                 used in several different HWPQ implementations
+// Description   : "Standard"  interface for hardware priority queues
+//                 for use with multiple implmentations
 //-----------------------------------------------------------------------------
 //`include "../pq_pkg.sv"
 import pq_pkg::*;
