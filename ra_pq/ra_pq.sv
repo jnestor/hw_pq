@@ -13,12 +13,13 @@
 //`include "../pk_pkg.sv"
 import pq_pkg::*;
 
-module sr_pq (
+module ra_pq (
     pq_if.dev di
     );
 
     logic clk, rst;
     kv_t kvi, kvo;
+    logic replace;
 
     assign kvi = di.kvi;
     assign di.kvo = kvo;
@@ -38,39 +39,35 @@ module sr_pq (
 
     kv_t [1:PQ_CAPACITY]  kv_v, kv_t1, kv_t2, kv_n;  // vector of stored key-value pairs
 
-   assign ki_lt_k_v[PQ_CAPACITY+1] = 1;
    assign kvo = kv_v[1];
 
-   assign empty = (kvo.key == KEYNEGINF);
-   assign full = (kv_v[PQ_CAPACITY].key != KEYINF);
+   assign empty = (kvo.key == KEY0);
+   assign full = (kv_v[PQ_CAPACITY].key != KEY0);
 
    genvar i;
 
    generate for (i=2; i<=PQ_CAPACITY; i++) begin
-       mux2(.sel(enq && !deq), .a(kv_v[i]), .b(kv_v[i-1]), .y(kv_t1[i]));
+       ra_pq_mux2 U_MUX2(.sel(enq && !deq), .d0(kv_v[i]), .d1(kv_v[i-1]), .y(kv_t1[i]));
    end
 endgenerate
 
    generate for (i=1; i<=PQ_CAPACITY; i+=2) begin
-       ra_pq_sort2(.a(kv_v[i]), .b(kv_v[i+1]), .min(kv_t[i]), .max(kv_t[i+1]));
+       ra_pq_sort2 U_SORTODD (.a(kv_t1[i]), .b(kv_t1[i+1]), .minv(kv_t2[i]), .maxv(kv_t2[i+1]));
    end
    endgenerate
 
    generate for (i=2; i<=PQ_CAPACITY-1; i+=2) begin
-       ra_pq_sort2(.a(kv_t2[i]), .b(kv_t2[i+1]), .min(kv_n[i]), .max(kv_n[i+1]));
+       ra_pq_sort2 U_SORTEVEN (.a(kv_t2[i]), .b(kv_t2[i+1]), .minv(kv_n[i]), .maxv(kv_n[i+1]));
    end
    endgenerate
 
-   generate for (i=1; i=PQ_CAPACITY; i++) begin
-       ra_pq_reg (.clk, .rst, kv_n[i], kv_v[i] );
+   generate for (i=1; i<=PQ_CAPACITY; i++) begin
+       ra_pq_reg U_REG (.clk, .rst, .d(kv_n[i]), .q(kv_v[i]) );
    end
    endgenerate
 
-   assign kv_n[0] = kv_t[0];
+   assign kv_n[0] = kv_t1[0];
 
-   assign kv_n[PQ_CAPACITY] = kv_t[PQ_CAPACITY];
+   assign kv_n[PQ_CAPACITY] = kv_t2[PQ_CAPACITY];
 
-   always_ff @(posedge clk)
-
-
-endmodule: sr_pq
+endmodule: ra_pq
