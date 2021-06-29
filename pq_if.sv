@@ -21,8 +21,6 @@ import pq_pkg::*;
         kv_t kvo;
         logic deq;
 
-        kv_t odata;
-
         // used to implement a device
         modport dev (
             input clk, rst,
