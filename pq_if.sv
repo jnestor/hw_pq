@@ -37,10 +37,10 @@ import pq_pkg::*;
 
         clocking cb @(posedge clk);
             default output #1;
-            output  rst, enq, kvi;
+            output  #1 rst, enq, kvi;
             input full, busy, empty;
-            output kvo;
-            output  deq;
+            output #1 kvo;
+            output  #1 deq;
         endclocking
 
         // use to connect to a testbench
