@@ -5,6 +5,6 @@ module pq_key_compare(
     output a_lt_b
     );
 
-    assign a_lt_b = (a < b);
+    assign a_lt_b = (a.key < b.key);
 
 endmodule
