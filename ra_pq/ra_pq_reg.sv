@@ -16,7 +16,7 @@ module ra_pq_reg (
     );
 
     always_ff @(posedge clk) begin
-        if (rst) q <= {KEY0,VAL0};
+        if (rst) q <= {KEYINF,VAL0};
         else q <= d;
     end
 
