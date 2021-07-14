@@ -1,8 +1,14 @@
-// Shift-register version of the priority queue
-//
-//
+//-----------------------------------------------------------------------------
+// Package Name   : sr_pq - shift-register-based PQ
+// Project       : HWPQ: Hardware Priority Queue Study
+//-----------------------------------------------------------------------------
+// Author        : John Nestor
+// Created       : July 13, 2021
+//-----------------------------------------------------------------------------
+// Description   : Shift-register-based PQ that can do enqueue dequeue,
+//                 and replace (simultaneous enqueue and dequeue)
+//-----------------------------------------------------------------------------
 
-//`include "../pk_pkg.sv"
 import pq_pkg::*;
 
 module sr_pq (

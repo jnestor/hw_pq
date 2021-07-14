@@ -1,9 +1,17 @@
-//
-//  Single stage for shift-register PQ
-//
+//-----------------------------------------------------------------------------
+// Package Name  : sr_pq_stage - one stage of shift-register PQ
+// Project       : HWPQ: Hardware Priority Queue Study
+//-----------------------------------------------------------------------------
+// Author        : John Nestor
+// Created       : July 13, 2021
+//-----------------------------------------------------------------------------
+// Description   : Implements one stage of the shift-regsiter PQ
+//                 Note it can do enqueue, dequeue, and replace
+//                 (simultaneous dequeue and enqueue)
+// It would be interesting to see how it would simplify if we`
+// removed the repace operation
+//-----------------------------------------------------------------------------
 
-
-//`include "../pk_pkg.sv"
 import pq_pkg::*;
 
 module sr_pq_stage (

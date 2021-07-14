@@ -1,4 +1,14 @@
 //`include "../pk_pkg.sv"
+//-----------------------------------------------------------------------------
+// Module Name   : ra_pq_tb - testbench for register arry PQ
+// Project       : HWPQ: Hardware Priority Queue Study
+//-----------------------------------------------------------------------------
+// Author        : John Nestor
+// Created       : July 2021
+//-----------------------------------------------------------------------------
+// Description   : Testbench for register array PQ
+//-----------------------------------------------------------------------------
+
 import pq_pkg::*;
 
 module ra_pq_tb (pq_if.tb ti);
