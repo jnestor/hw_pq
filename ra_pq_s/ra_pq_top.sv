@@ -21,10 +21,10 @@ module sr_pq_top;
         clk = 1; #5;
     end
 
-    pq_if PQ_IF(clk);
+    pq_rd_if PQ_IF(clk);
 
-    ra_pq DUV(PQ_IF.dev);
+    ra_pq_s DUV(PQ_IF.dev);
 
-    ra_pq_tb TB(PQ_IF.tb);
+    ra_pq_s_tb TB(PQ_IF.tb);
 
 endmodule

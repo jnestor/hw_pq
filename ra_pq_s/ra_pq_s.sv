@@ -15,13 +15,12 @@
 //`include "../pk_pkg.sv"
 import pq_pkg::*;
 
-module ra_pq (
-    pq_if.dev di
+module ra_pq_s (
+    pq_rd_if.dev di
     );
 
     logic clk, rst;
     kv_t kvi, kvo;
-    logic replace;
 
     assign kvi = di.kvi;
     assign di.kvo = kvo;
@@ -29,10 +28,9 @@ module ra_pq (
     assign rst = di.rst;
 
 
-    logic full, empty, enq, deq;
-    assign enq = di.enq && !full;
-    assign deq = di.deq && !empty;
-    assign replace = di.enq && di.deq && !empty;
+    logic full, empty, replace, deq;
+    assign replace = di.replace;
+    assign deq = di.deq;
 
     assign di.full = full;
     assign di.empty = empty;
@@ -43,12 +41,13 @@ module ra_pq (
 
     assign kvo = kv_v[1];
 
-    assign empty = (kvo.key == KEYINF);
-    assign full = (kv_v[PQ_CAPACITY].key != KEYINF);
+    assign empty = (kvo.key == KEYINF);  // true when the queue is full of "dummy" KEYNF values
+
+    assign full = (kvo.key != KEY0);  // true when all iniital "dummy" KEY0 values have been replaced
 
     genvar i;
 
-    ra_pq_mux3 U_MUX3 (.sel({enq,deq}), .d0(kv_v[1]), .d1({KEYINF,VAL0}), .d2(kvi), .y(kv_t1[1]));
+    ra_pq_mux3 U_MUX3 (.sel({replace,deq}), .d0(kv_v[1]), .d1({KEYINF,VAL0}), .d2(kvi), .y(kv_t1[1]));
 
     // got rid of the first stage of mux2's here
     assign kv_t1[2:PQ_CAPACITY] = kv_v[2:PQ_CAPACITY];
@@ -72,4 +71,4 @@ module ra_pq (
 
     assign kv_n[PQ_CAPACITY] = kv_t2[PQ_CAPACITY];
 
-endmodule: ra_pq
+endmodule: ra_pq_s

@@ -11,10 +11,10 @@
 
 import pq_pkg::*;
 
-module ra_pq_wrapper(
+module ra_pq_s_wrapper(
     input logic clk, rst,
     input kv_t kvi,
-    input logic enq,
+    input logic replace,
     output logic full,
     output logic busy,
     output logic empty,
@@ -22,18 +22,18 @@ module ra_pq_wrapper(
     input logic deq
     );
 
-    pq_if U_PQ_IF (.clk);
+    pq_rd_if U_PQ_IF_S (.clk);
 
-    ra_pq U_RA_PQ(U_PQ_IF.dev);
+    ra_pq_s U_RA_PQ_S(U_PQ_IF_S.dev);
 
    // is it really this easy?
-    assign U_PQ_IF.rst = rst;
-    assign U_PQ_IF.kvi = kvi;
-    assign U_PQ_IF.enq = enq;
-    assign full = U_PQ_IF.full;
-    assign busy = U_PQ_IF.busy;
-    assign empty = U_PQ_IF.empty;
-    assign kvo = U_PQ_IF.kvo;
-    assign U_PQ_IF.deq = deq;
+    assign U_PQ_IF_S.rst = rst;
+    assign U_PQ_IF_S.kvi = kvi;
+    assign U_PQ_IF_S.replace = replace;
+    assign full = U_PQ_IF_S.full;
+    assign busy = U_PQ_IF_S.busy;
+    assign empty = U_PQ_IF_S.empty;
+    assign kvo = U_PQ_IF_S.kvo;
+    assign U_PQ_IF_S.deq = deq;
 
 endmodule
