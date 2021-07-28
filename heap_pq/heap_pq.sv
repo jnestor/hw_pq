@@ -32,11 +32,35 @@ module heap_pq (
     kv_t heap [1:PQ_CAPACITY];  // vector of stored key-value pairs
 
     // index of last item in heap
-    logic [$clog2(PQ_CAPACITY)-1:0] last;
+    logic [$clog2(PQ_CAPACITY)-1:0] heap_size, heap_size_next;
 
-    assign empty = (last == 0);
+    assign empty = (heap_size == 0);
 
-    assign full = (last == PQ_CAPACITY);
+    assign full = (heap_size == PQ_CAPACITY);
+
+    kv_t kv_ni, kv_ni_next, kv_nj, kv_njnext, kv_min, kv_min_next;
+
+    typedef enum logic [3:0] {IDLE, ENQ_WR, ENQ_RDP, ENQ_SW1, ENQ_SW2, DEQ_ST, DEQ_MVLAST, HPFY_ST, ..., DEQ_ST} states_t;
+
+    states_t state, next;
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            heap_size <= 0;
+            kv_ni <= {KEY0,VAL0};
+            kv_nj <= {KEY0,VAL0};
+            kv_min <= {KEY0,VAL0};
+            state <= IDLE;
+        end
+        else begin
+            heap_size <= heap_size_next;
+            kv_ni <= kv_ni_next;
+            kv_nj <= kv_nj_next;
+            kv_min <= kv_min_next;
+            state <= next;
+        end
+
+    end
 
 
 
