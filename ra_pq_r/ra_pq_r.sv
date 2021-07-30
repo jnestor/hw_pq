@@ -90,8 +90,4 @@ module ra_pq_r (
     end
     endgenerate
 
-    assign kv_n[1] = kv_t2[1];
-
-    assign kv_n[PQ_CAPACITY] = kv_t2[PQ_CAPACITY];
-
 endmodule: ra_pq_r
