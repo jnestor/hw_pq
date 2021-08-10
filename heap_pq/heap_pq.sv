@@ -38,7 +38,8 @@ module heap_pq (
 
     assign full = (heap_size == PQ_CAPACITY);
 
-    kv_t kv_ni, kv_ni_next, kv_nj, kv_njnext, kv_min, kv_min_next;
+    kv_t kv_ni, kv_ni_next, kv_nj, kv_njnext, kv_cmp, kv_min, kv_min_next;
+
 
     typedef enum logic [3:0] {IDLE, ENQ_WR, ENQ_RDP, ENQ_SW1, ENQ_SW2, DEQ_ST, DEQ_MVLAST, HPFY_ST, ..., DEQ_ST} states_t;
 
