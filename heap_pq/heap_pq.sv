@@ -2,7 +2,6 @@
 //
 //
 
-//`include "../pk_pkg.sv"
 import pq_pkg::*;
 
 module heap_pq (
@@ -37,28 +36,43 @@ module heap_pq (
 
     assign full = (heap_size == PQ_CAPACITY);
 
-    logic [$clog2(PQ_CAPACITY)-1:0] addr, ni, ni_next, nj, nj_next, nmin, nmin_next;
+    logic [$clog2(PQ_CAPACITY)-1:0] ni, ni_next, nj, nj_next, nmin, nmin_next;
 
     kv_t dout_kv, i_kv, i_kv_next, j_kv, j_kv_next, min_kv, min_kv_next;
 
+    // memory signals
     logic [KEY_WIDTH+VAL_WIDTH-1:0] din, dout;
     logic [$clog2(PQ_CAPACITY)-1:0] addr;
+    logic we;
 
     kv_t din_kv, dout_kv;
 
-    assign din = cast_fu(din_kv);
+    assign din = din_kv;
     assign dout_kv = kv_t'(dout);
 
-    mem_swsr #(.W(KEY_WIDTH+VAL+WIDTH), .D(PQ_CAPACITY_1)) U_HEAPMEM (
+    mem_swsr #(.W(KEY_WIDTH+VAL_WIDTH), .D(PQ_CAPACITY-1)) U_HEAPMEM (
         .clk, .we, .addr, .din, .dout
-    )
+    );
 
     typedef enum logic [3:0] {
         IDLE, ENQ_ST, ENQ_RDP, ENQ_SWP, ENQ_SWP2, DEQ_ST, DEQ_ST2,
-        HPFY_ST, HPFY_RDL, HPFY_RDR HPFY_SWP, HPFY_SWP2
+        HPFY_ST, HPFY_RDL, HPFY_RDR, HPFY_SWP, HPFY_SWP2
     } states_t;
 
     states_t state, next;
+
+    function left(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+        left = ni << 1;
+    endfunction
+
+    function right(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+        right = (ni << 1) | 1;
+    endfunction
+
+    function parent(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+        parent = ni >> 1;
+    endfunction
+
 
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -93,8 +107,9 @@ module heap_pq (
         i_kv_next = i_kv;
         j_kv_next = j_kv;
         min_kv_next = min_kv;
+        din_kv = {KEY0,VAL0};
         addr = 0;
-        din = 0
+        din = 0;
         we = 0;
         idle = 0;
         case (state)
@@ -126,30 +141,30 @@ module heap_pq (
                 if (dout_kv.key < i_kv.key) next = IDLE;  // heap property satisfied
                 else begin
                     j_kv_next = dout;
-                    addr = parent(i);
+                    addr = parent(ni);
                     din_kv = i_kv;
                     we = 1;
-                    next = ENQ_SWP2
+                    next = ENQ_SWP2;
                 end
             end
             ENQ_SWP2: begin
                 addr = ni;
                 din_kv = j_kv;
                 we = 1;
-                ni_next = parent(i);
-                next = ENQ_LDP;
+                ni_next = parent(ni);
+                next = ENQ_RDP;
             end
             DEQ_ST: begin
                 addr = heap_size;  // read last item in heap
                 next = DEQ_ST2;
-                head_size_next = heap_size - 1;
+                heap_size_next = heap_size - 1;
             end
             DEQ_ST2: begin
                 addr = 1;       // write it into first item in heap
                 we = 1;
                 din_kv = dout_kv;
-                ni_kv_next = dout_kv;  // move to ni for heapify
-                nmin_kv_next = dout_kv;
+                i_kv_next = dout_kv;  // move to ni for heapify
+                min_kv_next = dout_kv;
                 ni_next = 1;
                 we = 1;
                 next = HPFY_ST;
@@ -158,21 +173,20 @@ module heap_pq (
                 addr = left(ni);  // set up to read left child
                 if (addr > heap_size) next = IDLE;
                 else next = HPFY_RDL;
-                end
             end
             HPFY_RDL: begin
                 if (dout_kv.key < min_kv.key) begin
                     nmin_next = left(ni);
-                    nmin_kv = dout_kv;
+                    min_kv = dout_kv;
                 end
                 addr = right(ni);
                 if (addr > heap_size) next = HPFY_SWP;
-                else next  HPFY_RDR;
+                else next = HPFY_RDR;
             end
             HPFY_RDR: begin
                 if (dout_kv.key < min_kv.key) begin
                     nmin_next = right(ni);
-                    nmin_kv = dout_kv;
+                    min_kv = dout_kv;
                 end
                 next = HPFY_SWP;
             end
@@ -197,13 +211,3 @@ module heap_pq (
     end
 
 endmodule
-
-
-
-
-
-
-
-
-
-endmodule: sr_pq
