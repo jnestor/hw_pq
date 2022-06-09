@@ -118,6 +118,7 @@ module heap_pq (
         case (state)
             IDLE: begin
                 idle = 1;
+                if (enq && deq && !empty) next = ENQ_DEQ_ST;
                 if (enq && !full) next = ENQ_ST;
                 else if (deq && !empty) next = DEQ_ST;
                 else next = IDLE;
@@ -157,6 +158,15 @@ module heap_pq (
                 ni_next = parent(ni);
                 next = ENQ_RDP;
             end
+            ENQ_DEQ_ST: begin
+                addr = 1;
+                ni_next = 1;
+                we = 1;         // write kvi into RAM
+                din_kv = kvi;
+                i_kv_next = kvi;
+                min_kv_next = kvi;  // prep for heapify
+                next = HPFY_ST;
+            end
             DEQ_ST: begin
                 addr = heap_size;  // read last item in heap
                 next = DEQ_ST2;
@@ -170,7 +180,6 @@ module heap_pq (
                 ni_next = 1;
                 min_kv_next = dout_kv;  // set min to ni for heapify
                 nmin_next = 1;
-                we = 1;
                 next = HPFY_ST;
             end
             HPFY_ST: begin
