@@ -38,7 +38,7 @@ module heap_pq (
 
     logic [$clog2(PQ_CAPACITY)-1:0] ni, ni_next, nj, nj_next, nmin, nmin_next;
 
-    kv_t dout_kv, i_kv, i_kv_next, j_kv, j_kv_next, min_kv, min_kv_next;
+    kv_t i_kv, i_kv_next, j_kv, j_kv_next, min_kv, min_kv_next;
 
     // memory signals
     logic [KEY_WIDTH+VAL_WIDTH-1:0] din, dout;
@@ -50,7 +50,7 @@ module heap_pq (
     assign din = din_kv;
     assign dout_kv = kv_t'(dout);
 
-    mem_swsr #(.W(KEY_WIDTH+VAL_WIDTH), .D(PQ_CAPACITY-1)) U_HEAPMEM (
+    mem_swsr #(.W(KEY_WIDTH+VAL_WIDTH), .D(PQ_CAPACITY+1)) U_HEAPMEM (
         .clk, .we, .addr, .din, .dout
     );
 
@@ -61,15 +61,15 @@ module heap_pq (
 
     states_t state, next;
 
-    function left(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+    function [$clog2(PQ_CAPACITY)-1:0] left(logic [$clog2(PQ_CAPACITY)-1:0] ni);
         left = ni << 1;
     endfunction
 
-    function right(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+    function [$clog2(PQ_CAPACITY)-1:0] right(logic [$clog2(PQ_CAPACITY)-1:0] ni);
         right = (ni << 1) | 1;
     endfunction
 
-    function parent(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+    function [$clog2(PQ_CAPACITY)-1:0] parent(logic [$clog2(PQ_CAPACITY)-1:0] ni);
         parent = ni >> 1;
     endfunction
 
@@ -94,9 +94,13 @@ module heap_pq (
             i_kv <= i_kv_next;
             j_kv <= j_kv_next;
             min_kv <= min_kv_next;
-
         end
+    end
 
+    // output register - load when we write the root of the heap
+    always_ff @(posedge clk) begin
+        if (rst) kvo <= {KEY0,VAL0};
+        else if (we && (addr==1)) kvo <= din_kv;
     end
 
     always_comb begin
@@ -107,9 +111,8 @@ module heap_pq (
         i_kv_next = i_kv;
         j_kv_next = j_kv;
         min_kv_next = min_kv;
-        din_kv = {KEY0,VAL0};
         addr = 0;
-        din = 0;
+        din_kv = {KEY0,VAL0};
         we = 0;
         idle = 0;
         case (state)
@@ -163,9 +166,10 @@ module heap_pq (
                 addr = 1;       // write it into first item in heap
                 we = 1;
                 din_kv = dout_kv;
-                i_kv_next = dout_kv;  // move to ni for heapify
-                min_kv_next = dout_kv;
+                i_kv_next = dout_kv;    // move to ni for heapify
                 ni_next = 1;
+                min_kv_next = dout_kv;  // set min to ni for heapify
+                nmin_next = 1;
                 we = 1;
                 next = HPFY_ST;
             end
@@ -177,7 +181,7 @@ module heap_pq (
             HPFY_RDL: begin
                 if (dout_kv.key < min_kv.key) begin
                     nmin_next = left(ni);
-                    min_kv = dout_kv;
+                    min_kv_next = dout_kv;
                 end
                 addr = right(ni);
                 if (addr > heap_size) next = HPFY_SWP;
@@ -186,7 +190,7 @@ module heap_pq (
             HPFY_RDR: begin
                 if (dout_kv.key < min_kv.key) begin
                     nmin_next = right(ni);
-                    min_kv = dout_kv;
+                    min_kv_next = dout_kv;
                 end
                 next = HPFY_SWP;
             end
