@@ -56,7 +56,7 @@ module heap_pq (
 
     typedef enum logic [3:0] {
         IDLE, ENQ_ST, ENQ_RDP, ENQ_SWP, ENQ_SWP2, DEQ_ST, DEQ_ST2,
-        HPFY_ST, HPFY_RDL, HPFY_RDR, HPFY_SWP, HPFY_SWP2
+        HPFY_ST, HPFY_RDL, HPFY_RDR, HPFY_SWP, HPFY_SWP2, ENQ_DEQ_ST
     } states_t;
 
     states_t state, next;
@@ -119,7 +119,7 @@ module heap_pq (
             IDLE: begin
                 idle = 1;
                 if (enq && deq && !empty) next = ENQ_DEQ_ST;
-                if (enq && !full) next = ENQ_ST;
+                else if (enq && !full) next = ENQ_ST;
                 else if (deq && !empty) next = DEQ_ST;
                 else next = IDLE;
             end
@@ -165,6 +165,7 @@ module heap_pq (
                 din_kv = kvi;
                 i_kv_next = kvi;
                 min_kv_next = kvi;  // prep for heapify
+                nmin_next = 1;
                 next = HPFY_ST;
             end
             DEQ_ST: begin

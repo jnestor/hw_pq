@@ -17,6 +17,7 @@ module heap_pq_tb (pq_if.tb ti);
         while (ti.cb.busy == 1) begin
             @ti.cb;
         end
+        assert (ti.cb.full==0); // squawk if we try to enqueue when full
         ti.cb.kvi <= {key,val};
         ti.cb.enq <= 1;
         ti.cb.deq <= 0;
@@ -26,6 +27,7 @@ module heap_pq_tb (pq_if.tb ti);
 
     task do_deq();
         while (ti.cb.busy == 1) @ti.cb;
+        assert(ti.cb.empty==0);  // squawk if we try to deqeue when empty
         ti.cb.enq <= 0;
         ti.cb.deq <= 1;
         @ti.cb;
@@ -33,9 +35,9 @@ module heap_pq_tb (pq_if.tb ti);
     endtask
 
     task do_enq_and_deq(input logic [KEY_WIDTH-1:0] key, input logic [VAL_WIDTH-1:0] val);
-        if (ti.cb.busy == 0) @ti.cb; // wait for an odd cycle
+        while (ti.cb.busy == 1) @ti.cb;
+        // no need to check empty & full since it can complete either way
         ti.cb.kvi <= {key,val};
-        assert(ti.cb.empty==0);  // wait for an odd cycle
         ti.cb.enq <= 1;
         ti.cb.deq <= 1;
         @ti.cb;
@@ -70,43 +72,8 @@ module heap_pq_tb (pq_if.tb ti);
       repeat (8) @ti.cb;
       do_deq();
       repeat (8) @ti.cb;
-      // do_enq(12,12);
-      // @ti.cb;
-      // @ti.cb;
-      // do_enq_and_deq(13,13);
-      // do_enq_and_deq(1,1);
-      // repeat (4) do_deq;
-      // @ti.cb;
-      // @ti.cb;
-      // do_enq(10,10);
-      // do_enq(11,1);
-      // do_enq(1,1);
-      // do_deq;
-      // do_enq(10,10);
-      // do_enq_and_deq(12,12);
-      // @ti.cb;
-//      do_enq_and_deq(2,12);
-//      @ti.cb;
-//      do_enq(9,10);
-//      do_enq(9,11);
-//      do_enq(9,12);
-//      @ti.cb;  // something funny here!
-//      do_enq_and_deq(1,11);
-//      repeat (4) do_deq();
-//      do_enq_and_deq(11,1);
-      @ti.cb;
-      @ti.cb;
-//      do_enq (12,12);
-//      @(ti.cb);
-//      do_enq(3,13);
-//      do_enq(10,10);
-//      @ti.cb;  // shoud register full here
-//      do_deq();
-//      do_enq(2,13);
-//      @ti.cb;  // should register full again
-//      do_enq_and_deq(1,11);
-//      @ti.cb;
-//      repeat(4) do_deq();
+      do_enq_and_deq(12,12);
+      repeat (8) @ti.cb;
      $stop;
   end
 
