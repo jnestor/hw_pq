@@ -23,6 +23,7 @@ module heap_pq_tb (pq_if.tb ti);
         ti.cb.deq <= 0;
         @ti.cb;
         ti.cb.enq <=0;
+        @ti.cb;
     endtask
 
     task do_deq();
@@ -32,6 +33,7 @@ module heap_pq_tb (pq_if.tb ti);
         ti.cb.deq <= 1;
         @ti.cb;
         ti.cb.deq <= 0;
+        @ti.cb;
     endtask
 
     task do_enq_and_deq(input logic [KEY_WIDTH-1:0] key, input logic [VAL_WIDTH-1:0] val);
@@ -43,6 +45,44 @@ module heap_pq_tb (pq_if.tb ti);
         @ti.cb;
         ti.cb.enq <= 0;
         ti.cb.deq <= 0;
+        @(ti.cb);
+    endtask
+
+    task fill_decreasing();  // file 8-entry FIFO in decreasing order
+        do_enq(8'h80,1);
+        do_enq(8'h70,2);
+        do_enq(8'h60,3);
+        do_enq(8'h50,4);
+        do_enq(8'h40,5);
+        do_enq(8'h30,6);
+        do_enq(8'h20,7);
+    endtask
+
+    task fill_increasing();  // file 8-entry FIFO in increasing order
+        do_enq(8'h20,1);
+        do_enq(8'h30,2);
+        do_enq(8'h40,3);
+        do_enq(8'h50,4);
+        do_enq(8'h60,5);
+        do_enq(8'h70,6);
+        do_enq(8'h80,7);
+    endtask
+
+    task fill_mix(); // fill 8-entry FIFO in mixed order
+        do_enq(8'h20,1);
+        do_enq(8'h80,2);
+        do_enq(8'h30,3);
+        do_enq(8'h70,4);
+        do_enq(8'h50,5);
+        do_enq(8'h60,6);
+        do_enq(8'h40,8);
+    endtask
+
+    task empty_heap();
+        while (ti.cb.busy == 1) @ti.cb;
+        while (!ti.cb.empty) begin
+            do_deq();
+        end
     endtask
 
   initial begin
@@ -50,10 +90,23 @@ module heap_pq_tb (pq_if.tb ti);
       ti.cb.rst <= 1;
       ti.cb.enq <= 0;
       ti.deq <= 0;
-
       @ti.cb;
       ti.cb.rst <= 0;
-      // @ti.cb;
+      @ti.cb;
+      fill_mix();
+      do_enq_and_deq(8'h90,8);
+      while (ti.cb.busy == 1) @ti.cb;
+      @ti.cb;
+      $stop;
+      empty_heap();
+      $stop;
+      fill_decreasing();
+      $stop;
+      empty_heap();
+      $stop;
+      fill_increasing();
+      $stop;
+      empty_heap();
       do_enq(8,14);
       @ti.cb;
       do_enq(11,11);

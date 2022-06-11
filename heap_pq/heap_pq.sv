@@ -44,6 +44,7 @@ module heap_pq (
     logic [KEY_WIDTH+VAL_WIDTH-1:0] din, dout;
     logic [$clog2(PQ_CAPACITY)-1:0] addr;
     logic we;
+    logic aov;  // overflow bit when calculating left, right children
 
     kv_t din_kv, dout_kv;
 
@@ -61,11 +62,11 @@ module heap_pq (
 
     states_t state, next;
 
-    function [$clog2(PQ_CAPACITY)-1:0] left(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+    function [$clog2(PQ_CAPACITY):0] left(logic [$clog2(PQ_CAPACITY)-1:0] ni);
         left = ni << 1;
     endfunction
 
-    function [$clog2(PQ_CAPACITY)-1:0] right(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+    function [$clog2(PQ_CAPACITY):0] right(logic [$clog2(PQ_CAPACITY)-1:0] ni);
         right = (ni << 1) | 1;
     endfunction
 
@@ -118,7 +119,7 @@ module heap_pq (
         case (state)
             IDLE: begin
                 idle = 1;
-                if (enq && deq && !empty) next = ENQ_DEQ_ST;
+                if (replace) next = ENQ_DEQ_ST;
                 else if (enq && !full) next = ENQ_ST;
                 else if (deq && !empty) next = DEQ_ST;
                 else next = IDLE;
@@ -184,8 +185,8 @@ module heap_pq (
                 next = HPFY_ST;
             end
             HPFY_ST: begin
-                addr = left(ni);  // set up to read left child
-                if (addr > heap_size) next = IDLE;
+                {aov,addr} = left(ni);  // set up to read left child
+                if ({aov,addr} > heap_size) next = IDLE;
                 else next = HPFY_RDL;
             end
             HPFY_RDL: begin
@@ -193,8 +194,8 @@ module heap_pq (
                     nmin_next = left(ni);
                     min_kv_next = dout_kv;
                 end
-                addr = right(ni);
-                if (addr > heap_size) next = HPFY_SWP;
+                {aov,addr} = right(ni);
+                if ({aov,addr} > heap_size) next = HPFY_SWP;
                 else next = HPFY_RDR;
             end
             HPFY_RDR: begin
@@ -216,6 +217,7 @@ module heap_pq (
             HPFY_SWP2: begin
                 addr = nmin;
                 din_kv = i_kv;
+                min_kv_next = i_kv; // set up for next comparison
                 we = 1;
                 ni_next = nmin;
                 i_kv_next = i_kv;
