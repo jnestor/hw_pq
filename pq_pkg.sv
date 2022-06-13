@@ -19,7 +19,7 @@ package pq_pkg;
 
     parameter KEY_WIDTH=8;
     parameter VAL_WIDTH=8;
-    parameter PQ_CAPACITY=63;
+    parameter PQ_CAPACITY=7;
 
     parameter [KEY_WIDTH-1:0] KEYINF = '1;
     parameter [KEY_WIDTH-1:0] KEY0 = '0;
