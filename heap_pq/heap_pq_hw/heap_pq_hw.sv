@@ -13,14 +13,19 @@ import pq_pkg::*;
 
 module heap_pq_hw(
     input logic clk, rst,
-    input kv_t kvi,
+    input [15:0] kvi_logic,
     input logic enq,
     output logic full,
     output logic busy,
     output logic empty,
-    output kv_t kvo,
+    output [15:0] logic kvo_logic;
     input logic deq
     );
+
+    kv_t kvi, kvo;
+
+    assign kvi = kv_t'kvi_logic;
+    assign kvi_logic = kvo;
 
     logic enq_pb, deq_pb, enq_deq_pb;
 
