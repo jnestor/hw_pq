@@ -26,9 +26,6 @@ module heap_pq (
     assign di.empty = empty;
     assign di.busy = !idle;  // always done in one cycle
 
-    // heap array - PQ_CAPACITY should be a power of 2 (minus 1)
-    kv_t heap [1:PQ_CAPACITY];  // vector of stored key-value pairs
-
     // index of last item in heap
     logic [$clog2(PQ_CAPACITY)-1:0] heap_size, heap_size_next;
 
@@ -51,6 +48,7 @@ module heap_pq (
     assign din = din_kv;
     assign dout_kv = kv_t'(dout);
 
+    // memory (BRAM) for heap storage
     mem_swsr #(.W(KEY_WIDTH+VAL_WIDTH), .D(PQ_CAPACITY+1)) U_HEAPMEM (
         .clk, .we, .addr, .din, .dout
     );
@@ -116,6 +114,7 @@ module heap_pq (
         din_kv = {KEY0,VAL0};
         we = 0;
         idle = 0;
+        next = IDLE;  // should not happen
         case (state)
             IDLE: begin
                 idle = 1;
