@@ -18,18 +18,23 @@ module leq1
 );
 
 logic wenTop;
+const logic [LEVELS-1:0] MAX_CAPACITY = '1;
 pheapTypes::entry_t rTop, wData;
-pheapTypes::entry_t level_mem = {32'h00000000, {LEVELS{1'b1}}, 1'b0};
+pheapTypes::entry_t level_mem = {32'h00000000, MAX_CAPACITY, 1'b0};
 
 // storage for root node on level 1
 always_ff @(posedge clk) begin
-        if (wenTop) begin
-            level_mem <= wData;
-            if (wenTop) rTop <= wData;
-            else rTop <= level_mem;
-        end else rTop <= level_mem;
-
+    if (rst) begin
+        level_mem <= {32'h00000000, MAX_CAPACITY, 1'b0};
+        rTop <= {32'h00000000, MAX_CAPACITY, 1'b0};
     end
+    else if (wenTop) begin
+        level_mem <= wData;
+        if (wenTop) rTop <= wData;
+        else rTop <= level_mem;
+    end else rTop <= level_mem;
+
+end
 
 typedef enum logic {READ_MEM, SET_OUT} states_t;
 states_t state, next;
