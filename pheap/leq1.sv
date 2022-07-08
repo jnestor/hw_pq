@@ -1,3 +1,13 @@
+//-----------------------------------------------------------------------------
+// Module Name   : leq1
+// Project       : pheap - pipelined heap priority queue implementation
+//-----------------------------------------------------------------------------
+// Author        : Ethan Miller
+// Created       : May 2021
+//-----------------------------------------------------------------------------
+// Description   : This module controls the top level of the pHeap
+//-----------------------------------------------------------------------------
+
 `include "pheapTypes.sv"
 
 module leq1
@@ -11,6 +21,7 @@ logic wenTop;
 pheapTypes::entry_t rTop, wData;
 pheapTypes::entry_t level_mem = {32'h00000000, {LEVELS{1'b1}}, 1'b0};
 
+// storage for root node on level 1
 always_ff @(posedge clk) begin
         if (wenTop) begin
             level_mem <= wData;

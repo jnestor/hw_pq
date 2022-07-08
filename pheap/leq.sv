@@ -1,3 +1,14 @@
+//-----------------------------------------------------------------------------
+// Module Name   : leq
+// Project       : pheap - pipelined heap priority queue implementation
+//-----------------------------------------------------------------------------
+// Author        : Ethan Miller
+// Created       : May 2021
+//-----------------------------------------------------------------------------
+// Description   : This module controls an individual level of the pheap
+// for all levels except level1, which uses the leq1 module
+//-----------------------------------------------------------------------------
+
 `include "pheapTypes.sv"
 
 module leq
@@ -37,7 +48,7 @@ always_comb begin
             if (start) begin
                 active = 1;
                 done = WAIT;
-
+// ???whye the empty lines here?  was something else supposed to be here?
 
                 next = SET_OUT;
             end else begin

@@ -7,27 +7,28 @@ module pheap
     output logic rdy, [31:0] priorityOut, valid_out
     );
 
+    // operation & associated item for each level
     pheapTypes::opArray_t opArray [LEVELS:1];
 
-    initial begin
+    initial begin  // initialize for simulation only?
         for (int i = 1; i <= LEVELS; i++) begin
             opArray[i].levelOp = FREE;
             opArray[i].priorityValue = 0;
         end
     end
 
-    logic wenTop [LEVELS:1];
-    logic start [LEVELS:1];
-    logic actives [LEVELS:1];
-    logic shift_pos [LEVELS:1];
-    pheapTypes::done_t [LEVELS:1] done ;
-    pheapTypes::entry_t [LEVELS:1] a;
-    pheapTypes::entry_t [LEVELS:1] yTop ;
-    pheapTypes::entry_t [LEVELS + 1:1] yBotL ;
-    pheapTypes::entry_t [LEVELS + 1:1] yBotR ;
-    logic [31:0] outs [LEVELS:1];
+    logic wenTop [LEVELS:1];  // write enable for level modules
+    logic start [LEVELS:1];   // assert to start operation at each levels
+    logic actives [LEVELS:1];  // inidicate whether each level is active
+    logic shift_pos [LEVELS:1];  // initiate a shift at a level when asserted
+    pheapTypes::done_t [LEVELS:1] done ;  // status for each level
+    pheapTypes::entry_t [LEVELS:1] a;     // not sure what this is used for ???
+    pheapTypes::entry_t [LEVELS:1] yTop ;  // current subtree root at each level???
+    pheapTypes::entry_t [LEVELS + 1:1] yBotL ;  // current left child at each level
+    pheapTypes::entry_t [LEVELS + 1:1] yBotR ;  // current right child at each lvel
+    logic [31:0] outs [LEVELS:1];  // level output for each level
     assign priorityOut = outs[1];
-    assign yBotL[LEVELS + 1] = 'b0;
+    assign yBotL[LEVELS + 1] = 'b0;  // bottom level childrent don't exist
     assign yBotR[LEVELS + 1] = 'b0;
 
     genvar i;
@@ -39,7 +40,7 @@ module pheap
             logic [i - 2:0] startPos;
             logic [i - 1:0] endPos;
 
-            if ((i != 1) && (i != LEVELS)) begin
+            if ((i != 1) && (i != LEVELS)) begin // instantiate middle levels
                 level #(i) I_LEVEL(.clk, .topActive(actives[i]), .wenTop(wenTop[i]), .raddrTop(genHeap[i].raddrTop), .raddrBot(genHeap[i - 1].raddrBot),
                 .wraddrTop(genHeap[i].wraddrTop), .aTop(a[i]), .yTop(yTop[i]), .yBotR(yBotR[i]), .yBotL(yBotL[i]));
 
@@ -48,12 +49,12 @@ module pheap
                 .wraddrTop(genHeap[i].wraddrTop), .endPos(genHeap[i].endPos), .out(outs[i]), .wData(a[i]));
 
                 level_shifter #(i) I_SHIFTER(.clk, .rst, .shift(shift_pos[i - 1]), .pos_in(genHeap[i - 1].endPos), .pos_out(genHeap[i].startPos));
-            end else if (i == 1) begin
+            end else if (i == 1) begin  // instantiate top level
 
                 leq1 I_LEQ(.clk, .rst, .start(start[i]), .in(opArray[i].priorityValue),
                 .rBotL(yBotL[i + 1]), .rBotR(yBotR[i + 1]), .op(opArray[i].levelOp), .done(done[i]), .raddrBot(genHeap[i].raddrBot),
                 .endPos(genHeap[i].endPos), .out(outs[i]));
-            end else begin
+            end else begin // instantiate bottom level
                 level #(i) I_LEVEL(.clk, .topActive(actives[i]), .wenTop(wenTop[i]), .raddrTop(genHeap[i].raddrTop), .raddrBot(genHeap[i - 1].raddrBot),
                 .wraddrTop(genHeap[i].wraddrTop), .aTop(a[i]), .yTop(yTop[i]), .yBotR(yBotR[i]), .yBotL(yBotL[i]));
 
