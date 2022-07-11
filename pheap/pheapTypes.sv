@@ -11,9 +11,12 @@
 
 `ifndef PHEAPTYPES
 `define PHEAPTYPES
+
 package pheapTypes;
 
-    parameter LEVELS = 16;
+    import pq_pkg::*;
+
+    parameter LEVELS = $clog2(PQ_CAPACITY);
 
     // done_t indicates the status of each level
     typedef enum logic [1:0] {DONE, NEXT_LEVEL, WAIT} done_t;
@@ -28,6 +31,7 @@ package pheapTypes;
     // entry_t used for each node in the pHeap
     typedef struct packed {
         pValue priorityValue;
+        kv_t kv;
         logic [LEVELS - 1:0] capacity;
         logic active;
     } entry_t;
@@ -36,6 +40,7 @@ package pheapTypes;
     typedef struct packed {
         opcode_t levelOp;
         logic [31:0] priorityValue;
+        kv_t kv;
     } opArray_t;
 
 endpackage
