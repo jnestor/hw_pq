@@ -26,9 +26,9 @@ module pheap_pq (
     assign rst = di.rst;
 
 
-    logic full, empty, enq, deq, rdy;
-    assign enq = di.enq && !full;
-    assign deq = di.deq && !empty;
+    logic full, empty, enq, deq, replace, rdy;
+    assign enq = di.enq && !di.deq && !full;
+    assign deq = di.deq && !di.enq && !empty;
     assign replace = di.enq && di.deq && !empty;
 
     assign di.full = full;
@@ -90,7 +90,7 @@ module pheap_pq (
                 .pos_in(genHeap[i - 1].endPos), .pos_out(genHeap[i].startPos));
             end
             else if (i == 1) begin  // instantiate top level
-                leq1 I_LEQ(.clk, .rst, .start(start[i]), .in(opArray[i].kv),
+                leq1 I_LEQ1(.clk, .rst, .start(start[i]), .in(opArray[i].kv),
                 .rBotL(yBotL[i + 1]), .rBotR(yBotR[i + 1]),
                 .op(opArray[i].levelOp), .done(done[i]),
                 .raddrBot(genHeap[i].raddrBot),
@@ -114,6 +114,30 @@ module pheap_pq (
                 .pos_in(genHeap[i - 1].endPos), .pos_out(genHeap[i].startPos));
             end
         end
+
+        task print_pheap();
+            // print root at level 1
+            $display("pheap at time %t", $time());
+            print_entry(genHeap[1].genblk1.I_LEQ1.level_mem);
+            $display("");
+            print_entry(genHeap[2].genblk1.I_LEVEL.U_RAM.level_ram[0]);
+            print_entry(genHeap[2].genblk1.I_LEVEL.U_RAM.level_ram[1]);
+            $display("");
+            print_entry(genHeap[3].genblk1.I_LEVEL.U_RAM.level_ram[0]);
+            print_entry(genHeap[3].genblk1.I_LEVEL.U_RAM.level_ram[1]);
+            print_entry(genHeap[3].genblk1.I_LEVEL.U_RAM.level_ram[2]);
+            print_entry(genHeap[3].genblk1.I_LEVEL.U_RAM.level_ram[3]);
+            $display("");
+            print_entry(genHeap[4].genblk1.I_LEVEL.U_RAM.level_ram[0]);
+            print_entry(genHeap[4].genblk1.I_LEVEL.U_RAM.level_ram[1]);
+            print_entry(genHeap[4].genblk1.I_LEVEL.U_RAM.level_ram[2]);
+            print_entry(genHeap[4].genblk1.I_LEVEL.U_RAM.level_ram[3]);
+            print_entry(genHeap[4].genblk1.I_LEVEL.U_RAM.level_ram[4]);
+            print_entry(genHeap[4].genblk1.I_LEVEL.U_RAM.level_ram[5]);
+            print_entry(genHeap[4].genblk1.I_LEVEL.U_RAM.level_ram[6]);
+            print_entry(genHeap[4].genblk1.I_LEVEL.U_RAM.level_ram[7]);
+            $display("\n");
+        endtask
     endgenerate
 
     assign rdy = (done[1] == DONE && (done[2] == DONE || done[2] == NEXT_LEVEL));
@@ -121,17 +145,17 @@ module pheap_pq (
 
 
     always_ff @(posedge clk) begin
-        if (enq && !deq && !full) begin
+        if (enq) begin
             start[1] <= 1;
             opArray[1].kv <= kvi;
             opArray[1].levelOp <= LEQ;
         end
-        else if (!enq && deq && !empty) begin
+        else if (deq) begin
             start[1] <= 1;
             opArray[1].kv <= KV_EMPTY;
             opArray[1].levelOp = DEQ;
         end
-        else if (enq && deq && !empty) begin
+        else if (replace) begin
             start[1] <= 1;
             opArray[1].kv <= kvi;
             opArray[1].levelOp = ENQ_DEQ;
@@ -162,6 +186,20 @@ module pheap_pq (
         end
 
     end
+
+    task print_kv(input kv_t kv);
+        $write("[K=%d V=%d]", kv.key, kv.value);
+    endtask
+
+    task print_entry(input entry_t e);
+        $write("<");
+        print_kv(e.kv);
+        $write(" cap=%d active=%1d> ", e.capacity, e.active);
+    endtask
+
+    task goofus();
+        $display("goofus!");
+    endtask
 
 
 endmodule

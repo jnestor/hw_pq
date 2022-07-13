@@ -77,7 +77,7 @@ always_comb begin
                     wenTop = 1'b1;
                     done = DONE;
                 end else begin
-                    if (rTop.kv.key < in_reg) begin
+                    if (rTop.kv.key < in_reg.key) begin
                         out = rTop.kv;
                         wData.active = 1'b1;
                         wData.capacity = (rTop.capacity == 0) ? 0 : rTop.capacity - 1;
@@ -101,14 +101,24 @@ always_comb begin
                 out = rTop.kv;
                 wData.capacity = rTop.capacity + 1;
                 wenTop = 1'b1;
-                if (~rBotL.active && ~rBotR.active) begin
+                if (!rBotL.active && !rBotR.active) begin
                     done = DONE;
                     wData.kv = KV_EMPTY;
                     wData.active = 1'b0;
-                end else begin
+                end else if (rBotL.active && rBotR.active) begin
                     wData.kv = (rBotL.kv.key >= rBotR.kv.key) ? rBotL.kv : rBotR.kv;
                     wData.active = 1'b1;
                     endPos = (rBotL.kv.key >= rBotR.kv.key) ? {startPos, 1'b0} : {startPos, 1'b1};
+                    done = NEXT_LEVEL;
+                end else if (rBotL.active) begin
+                    wData.kv = rBotL.kv;
+                    wData.active = 1'b1;
+                    endPos = {startPos, 1'b0};
+                    done = NEXT_LEVEL;
+                end else begin
+                    wData.kv = rBotR.kv;
+                    wData.active = 1'b1;
+                    endPos = {startPos, 1'b1};
                     done = NEXT_LEVEL;
                 end
             end

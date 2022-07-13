@@ -80,7 +80,7 @@ always_comb begin
                     wenTop = 1'b1;
                     done = DONE;
                 end else begin
-                    if (rTop.kv.key < in) begin //also fix this - if currentpriority less than priority to be written
+                    if (rTop.kv.key < in.key) begin //also fix this - if currentpriority less than priority to be written
                         out = rTop.kv; //take a look at this logic: idk if legal
                         wData.active = 1'b1;
                         wData.capacity = (rTop.capacity == 0) ? 0 : rTop.capacity - 1;
@@ -104,14 +104,24 @@ always_comb begin
                 out = rTop.kv;
                 wData.capacity = rTop.capacity + 1;
                 wenTop = 1'b1;
-                if (~rBotL.active && ~rBotR.active) begin
+                if (!rBotL.active && !rBotR.active) begin
                     done = DONE;
                     wData.kv = KV_EMPTY;
                     wData.active = 1'b0;
-                end else begin
+                end else if (rBotL.active && rBotR.active) begin
                     wData.kv = (rBotL.kv.key >= rBotR.kv.key) ? rBotL.kv : rBotR.kv;
                     wData.active = 1'b1;
                     endPos = (rBotL.kv.key >= rBotR.kv.key) ? 1'b0 : 1'b1;
+                    done = NEXT_LEVEL;
+                end else if (rBotL.active) begin
+                    wData.kv = rBotL.kv;
+                    wData.active = 1'b1;
+                    endPos = 1'b0;
+                    done = NEXT_LEVEL;
+                end else begin
+                    wData.kv = rBotR.kv;
+                    wData.active = 1'b1;
+                    endPos = 1'b1;
                     done = NEXT_LEVEL;
                 end
             end
