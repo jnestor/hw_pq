@@ -2,7 +2,7 @@
 // Module Name   : leq
 // Project       : pheap - pipelined heap priority queue implementation
 //-----------------------------------------------------------------------------
-// Author        : Ethan Miller
+// Author        : Ethan Miller (revised by John Nestor)
 // Created       : May 2021
 //-----------------------------------------------------------------------------
 // Description   : This module controls an individual level of the pheap
@@ -12,18 +12,29 @@
 `include "pheapTypes.sv"
 
 module leq
+    import pq_pkg::*;
     import pheapTypes::*;
 
     #(parameter LEVEL=2)
-    (input logic clk, rst, start, [LEVEL - 2:0] startPos, pValue in, pheapTypes::entry_t rTop, rBotL, rBotR, pheapTypes::opcode_t op,
-    output logic wenTop, active, pheapTypes::done_t done, [LEVEL - 2:0] raddrTop, wraddrTop, [LEVEL - 1:0] raddrBot, [LEVEL - 1:0] endPos, [31:0] out, pheapTypes::entry_t wData
+    (
+    input logic clk, rst, start,
+    input logic [LEVEL - 2:0] startPos,
+    input kv_t in,
+    input pheapTypes::entry_t rTop, rBotL, rBotR,
+    input pheapTypes::opcode_t op,
+    output logic wenTop, active,
+    output pheapTypes::done_t done,
+    output logic [LEVEL - 2:0] raddrTop, wraddrTop,
+    output logic [LEVEL - 1:0] raddrBot, endPos,
+    output kv_t out,
+    output pheapTypes::entry_t wData  // write to level memory
 );
 
 
 typedef enum logic {READ_MEM, SET_OUT} states_t;
 states_t state, next;
 
-pValue in_reg;
+kv_t in_reg;
 
 always_ff @(posedge clk) begin
     if (rst) state <= READ_MEM;
@@ -40,16 +51,14 @@ always_comb begin
     wenTop = 1'b0;
     raddrTop = startPos;
     raddrBot = {startPos, 1'b0};
-    out = 0;
-    wData = 'b0;
+    out = KV_EMPTY;
+    wData = ENTRY_EMPTY;
 
     case (state)
-        READ_MEM: begin
+        READ_MEM: begin  // read top from current level, children from next level
             if (start) begin
                 active = 1;
                 done = WAIT;
-// ???whye the empty lines here?  was something else supposed to be here?
-
                 next = SET_OUT;
             end else begin
                 next = READ_MEM;
@@ -64,43 +73,42 @@ always_comb begin
                 if (~rTop.active) begin
                     wData.active = 1'b1;
                     wData.capacity = rTop.capacity - 1;
-                    wData.priorityValue = in_reg;
+                    wData.kv = in_reg;
                     wenTop = 1'b1;
                     done = DONE;
                 end else begin
-                    if (rTop.priorityValue < in_reg) begin
-                        out = rTop.priorityValue;
+                    if (rTop.kv.key < in_reg) begin
+                        out = rTop.kv;
                         wData.active = 1'b1;
                         wData.capacity = (rTop.capacity == 0) ? 0 : rTop.capacity - 1;
-                        wData.priorityValue = in_reg;
+                        wData.kv = in_reg;
                         wenTop = 1'b1;
                     end else begin out = in_reg;
                         wData.active = 1'b1;
                         wData.capacity = (rTop.capacity == 0) ? 0 : rTop.capacity - 1;
-                        wData.priorityValue = rTop.priorityValue;
+                        wData.kv = rTop.kv;
                         wenTop = 1'b1;
                     end
                     if (rBotL.capacity != 0 && rBotR.capacity != 0)
-                        endPos = (rBotL.priorityValue <= rBotR.priorityValue) ? {startPos, 1'b0} : {startPos, 1'b1};
+                        endPos = (rBotL.kv.key <= rBotR.kv.key) ? {startPos, 1'b0} : {startPos, 1'b1};
                     else if (rBotL.capacity != 0)
                         endPos = {startPos, 1'b0};
                     else
                         endPos = {startPos, 1'b1};
-
                     done = NEXT_LEVEL;
                 end
             end else if (op == DEQ) begin
-                out = rTop.priorityValue;
+                out = rTop.kv;
                 wData.capacity = rTop.capacity + 1;
                 wenTop = 1'b1;
                 if (~rBotL.active && ~rBotR.active) begin
                     done = DONE;
-                    wData.priorityValue = 'b0;
+                    wData.kv = KV_EMPTY;
                     wData.active = 1'b0;
                 end else begin
-                    wData.priorityValue = (rBotL.priorityValue >= rBotR.priorityValue) ? rBotL.priorityValue : rBotR.priorityValue;
+                    wData.kv = (rBotL.kv.key >= rBotR.kv.key) ? rBotL.kv : rBotR.kv;
                     wData.active = 1'b1;
-                    endPos = (rBotL.priorityValue >= rBotR.priorityValue) ? {startPos, 1'b0} : {startPos, 1'b1};
+                    endPos = (rBotL.kv.key >= rBotR.kv.key) ? {startPos, 1'b0} : {startPos, 1'b1};
                     done = NEXT_LEVEL;
                 end
             end

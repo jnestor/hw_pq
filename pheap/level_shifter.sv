@@ -9,8 +9,9 @@
 // from one level of the pheap to the next.
 //-----------------------------------------------------------------------------
 
-module level_shifter #(parameter LEVEL = 1)(
-    input logic clk, rst, shift, [LEVEL - 2:0] pos_in,
+module level_shifter #(parameter LEVEL = 1) (
+    input logic  clk, rst, shift, 
+    input logic  [LEVEL - 2:0] pos_in,
     output logic [LEVEL - 2:0] pos_out);
 
     always_ff @(posedge clk) begin

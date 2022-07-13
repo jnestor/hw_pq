@@ -17,12 +17,13 @@ module level
     import pheapTypes::*;
 
     #(parameter LEVEL=2)
-    (input logic clk, wenTop, topActive, [LEVEL - 2:0] raddrTop, raddrBot, wraddrTop, pheapTypes::entry_t aTop,
+    (
+    input logic clk, wenTop, topActive,
+    input logic [LEVEL - 2:0] raddrTop, raddrBot, wraddrTop,
+    input pheapTypes::entry_t aTop,
     output pheapTypes::entry_t yTop, yBotL, yBotR
-);
-
-
-
+    );
+    
     logic we_a, we_b;
     logic [LEVEL - 2:0] addr_a, addr_b;
     logic [$bits(pheapTypes::entry_t) - 1 : 0] data_a, data_b;
@@ -51,7 +52,8 @@ module level
         end
     end
 
-    levelRam #(LEVEL) U_RAM(.clk, .we_a, .we_b, .addr_a, .addr_b, .data_a, .data_b, .q_a, .q_b);
+    levelRam #(LEVEL) U_RAM(.clk, .we_a, .we_b, .addr_a, .addr_b,
+                            .data_a, .data_b, .q_a, .q_b);
 
 
 endmodule: level
