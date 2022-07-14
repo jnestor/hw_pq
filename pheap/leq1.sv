@@ -36,6 +36,14 @@ assign head_out = level_mem.kv;  // always output root node
 assign full = (level_mem.capacity==0);
 assign empty = (level_mem.capacity==MAX_CAPACITY);
 
+const logic left_child = 1'b0
+const logic right_child = 1'b1;
+
+logic in_gt_L, in_gt_R, L_gt_R;
+
+assign in_gt_L = cmp_kv_entry_gt(in, rBotL);
+assign in_gt_R = cmp_kv_entry_gt(in, rBotR);
+assign L_gt_r = cmp_entry_entry_gt(rBotL, rBotR);
 
 // storage for root node on level 1
 always_ff @(posedge clk) begin
@@ -122,6 +130,44 @@ always_comb begin
                     wData.kv = rBotR.kv;
                     wData.active = 1'b1;
                     endPos = 1'b1;
+                    done = NEXT_LEVEL;
+                end
+            end
+            else if (op == ENQ_DEQ) begin
+                // the top will always be overwritten here, but if
+                // he new value is < either of the the chldren
+                // we want to write the biggest child as the new top
+                // and pass ENQ_DEQ to next level
+                wData.active = 1;
+                wenTop = 1;
+                next = READ_MEM;
+                active = 1;
+                if (in_gt_L && in_gt_R)) begin  // heap property satisfied
+                    wData.kv = in;          // just write in top
+                    done = DONE;
+                end
+                else if (!in_gt_L && !in_gt_R) begin
+                    if (L_gt_R) begin
+                        wData.kv = rBotL;
+                        endPos = left_child;
+                    end
+                    else begin
+                        wData.kv = rBotR;
+                        endPos = right_child;
+                    end
+                    out = in;
+                    done = NEXT_LEVEL;
+                end
+                else if (in_gt_L) begin
+                    wData.kv = rBotL;
+                    endPos = left_child;
+                    out = in;
+                    done = NEXT_LEVEL;
+                end
+                else begin // in_gt_R
+                    wData.kv = rBotR;
+                    endPos = right_child;
+                    out = in;
                     done = NEXT_LEVEL;
                 end
             end
