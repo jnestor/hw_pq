@@ -36,14 +36,14 @@ assign head_out = level_mem.kv;  // always output root node
 assign full = (level_mem.capacity==0);
 assign empty = (level_mem.capacity==MAX_CAPACITY);
 
-const logic left_child = 1'b0
+const logic left_child = 1'b0;
 const logic right_child = 1'b1;
 
 logic in_gt_L, in_gt_R, L_gt_R;
 
 assign in_gt_L = cmp_kv_entry_gt(in, rBotL);
 assign in_gt_R = cmp_kv_entry_gt(in, rBotR);
-assign L_gt_r = cmp_entry_entry_gt(rBotL, rBotR);
+assign L_gt_R = cmp_entry_entry_gt(rBotL, rBotR);
 
 // storage for root node on level 1
 always_ff @(posedge clk) begin
@@ -70,6 +70,7 @@ always_comb begin
     raddrBot = 1'b0;
     out = KV_EMPTY;
     wData = ENTRY_EMPTY;
+
     case (state)
         READ_MEM: begin  // read children from next level
             if (start) begin
@@ -141,31 +142,30 @@ always_comb begin
                 wData.active = 1;
                 wenTop = 1;
                 next = READ_MEM;
-                active = 1;
-                if (in_gt_L && in_gt_R)) begin  // heap property satisfied
+                if (in_gt_L && in_gt_R) begin  // heap property satisfied
                     wData.kv = in;          // just write in top
                     done = DONE;
                 end
                 else if (!in_gt_L && !in_gt_R) begin
                     if (L_gt_R) begin
-                        wData.kv = rBotL;
+                        wData.kv = rBotL.kv;
                         endPos = left_child;
                     end
                     else begin
-                        wData.kv = rBotR;
+                        wData.kv = rBotR.kv;
                         endPos = right_child;
                     end
                     out = in;
                     done = NEXT_LEVEL;
                 end
-                else if (in_gt_L) begin
-                    wData.kv = rBotL;
+                else if (!in_gt_L) begin
+                    wData.kv = rBotL.kv;
                     endPos = left_child;
                     out = in;
                     done = NEXT_LEVEL;
                 end
                 else begin // in_gt_R
-                    wData.kv = rBotR;
+                    wData.kv = rBotR.kv;
                     endPos = right_child;
                     out = in;
                     done = NEXT_LEVEL;

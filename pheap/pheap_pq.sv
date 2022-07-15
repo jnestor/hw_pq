@@ -187,15 +187,9 @@ module pheap_pq (
 
     end
 
-    task print_kv(input kv_t kv);
-        $write("[K=%d V=%d]", kv.key, kv.value);
-    endtask
 
-    task print_entry(input entry_t e);
-        $write("<");
-        print_kv(e.kv);
-        $write(" cap=%d active=%1d> ", e.capacity, e.active);
-    endtask
+
+
 
     task goofus();
         $display("goofus!");

@@ -27,24 +27,23 @@ package pq_pkg;
 
     typedef enum logic {MIN_PQ, MAX_PQ} pq_type_t;
 
-    parameter pq_type_t PQ_TYPE = MIN_PQ;
+    parameter pq_type_t PQ_TYPE = MAX_PQ;
+
+    typedef struct packed {
+    logic [KEY_WIDTH-1:0] key;    // priority value
+    logic [VAL_WIDTH-1:0] value;  // data payload
+    } kv_t;
 
     parameter kv_t KV_EMPTY = {KEYINF, VAL0};
 
+    task print_kv(input kv_t kv);
+        $write("[K=%d V=%d]", kv.key, kv.value);
+    endtask
 
-    // this should support for both queue types
-    function kv_cmp_gt(input kv_t k1, k2)
+    function cmp_kv_gt(input kv_t k1, k2);
         if (PQ_TYPE==MAX_PQ) return (k1.key > k2.key);
-        else return (k1.key < k2.key;)
-
-    typedef struct packed {
-        logic [KEY_WIDTH-1:0] key;    // priority value
-        logic [VAL_WIDTH-1:0] value;  // data payload
-    } kv_t;
-
-
-
-
+        else return (k1.key < k2.key);
+    endfunction
 
 endpackage
 
