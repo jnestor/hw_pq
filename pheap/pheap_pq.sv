@@ -26,14 +26,14 @@ module pheap_pq (
     assign rst = di.rst;
 
 
-    logic full, empty, enq, deq, replace, rdy;
+    logic full, empty, enq, deq, replace, busy;
     assign enq = di.enq && !di.deq && !full;
     assign deq = di.deq && !di.enq && !empty;
     assign replace = di.enq && di.deq && !empty;
 
     assign di.full = full;
     assign di.empty = empty;
-    assign di.busy = !rdy;  // always done in one cycle
+    assign di.busy = busy;  // always done in one cycle
 
 //    (input logic clk, rst, valid, [31:0] priorityIn, pheapTypes::opcode_t toperation,
 //    output logic rdy, [31:0] priorityOut, valid_out
@@ -92,7 +92,7 @@ module pheap_pq (
             else if (i == 1) begin  // instantiate top level
                 leq1 I_LEQ1(.clk, .rst, .start(start[i]), .in(opArray[i].kv),
                 .rBotL(yBotL[i + 1]), .rBotR(yBotR[i + 1]),
-                .op(opArray[i].levelOp), .done(done[i]),
+                .op(opArray[i].levelOp), .active(actives[i]), .done(done[i]),
                 .raddrBot(genHeap[i].raddrBot),
                 .endPos(genHeap[i].endPos), .out(outs[i]), .head_out(kvo),
                 .full, .empty);
@@ -140,7 +140,8 @@ module pheap_pq (
         endtask
     endgenerate
 
-    assign rdy = (done[1] == DONE && (done[2] == DONE || done[2] == NEXT_LEVEL));
+    assign busy = actives[1] || actives[2];
+    //assign rdy = (done[1] == DONE && (done[2] == DONE || done[2] == NEXT_LEVEL));
     //assign valid_out = ((done[1] == DONE || done[1] == NEXT_LEVEL) && (opArray[1].levelOp == DEQ));
 
 

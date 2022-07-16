@@ -18,6 +18,7 @@ module leq1
     input kv_t in,
     input pheapTypes::entry_t rBotL, rBotR,
     input pheapTypes::opcode_t op,
+    output logic active,
     output pheapTypes::done_t done,
     output logic raddrBot, endPos,  // level 1 node index only 1 bit
     output kv_t out, head_out,
@@ -39,8 +40,9 @@ assign empty = (level_mem.capacity==MAX_CAPACITY);
 const logic left_child = 1'b0;
 const logic right_child = 1'b1;
 
-logic in_gt_L, in_gt_R, L_gt_R;
+logic in_gt_T, in_gt_L, in_gt_R, L_gt_R;
 
+assign in_gt_T = cmp_kv_entry_gt(in, rTop);
 assign in_gt_L = cmp_kv_entry_gt(in, rBotL);
 assign in_gt_R = cmp_kv_entry_gt(in, rBotR);
 assign L_gt_R = cmp_entry_entry_gt(rBotL, rBotR);
@@ -70,17 +72,23 @@ always_comb begin
     raddrBot = 1'b0;
     out = KV_EMPTY;
     wData = ENTRY_EMPTY;
+    active = 0;
 
     case (state)
         READ_MEM: begin  // read children from next level
             if (start) begin
+                active = 1;
                 done = WAIT;
                 next = SET_OUT;
-            end else next = READ_MEM;
+            end else begin
+                active = 0;
+                next = READ_MEM;
+            end
         end
 
         SET_OUT: begin
             next = READ_MEM;
+            active = 1;
             if (op == LEQ) begin
                 if (~rTop.active) begin
                     wData.active = 1'b1;
@@ -88,8 +96,9 @@ always_comb begin
                     wData.kv = in; //gotta fix this - write the prioritity, decremented capacity and active
                     wenTop = 1'b1;
                     done = DONE;
-                end else begin
-                    if (rTop.kv.key < in.key) begin //also fix this - if currentpriority less than priority to be written
+                end
+                else begin
+                    if (in_gt_T) begin //also fix this - if currentpriority less than priority to be written
                         out = rTop.kv; //take a look at this logic: idk if legal
                         wData.active = 1'b1;
                         wData.capacity = (rTop.capacity == 0) ? 0 : rTop.capacity - 1;
@@ -101,8 +110,10 @@ always_comb begin
                         wData.kv = rTop.kv;
                         wenTop = 1'b1;
                     end
+                    // the next two lines are not in the B&L paper, but OK
+                    // B&L just test capacity & leave it at that
                     if (rBotL.capacity != 0 && rBotR.capacity != 0)
-                        endPos = (rBotL.kv.key <= rBotR.kv.key) ? 1'b0 : 1'b1;
+                        endPos = (!L_gt_R) ? 1'b0 : 1'b1;
                     else if (rBotL.capacity != 0)
                         endPos = 1'b0;
                     else
@@ -110,27 +121,26 @@ always_comb begin
                     done = NEXT_LEVEL;
                 end
             end else if (op == DEQ) begin
+                // if there at least one active child, replace
+                // rTop with the child with the largest value
                 out = rTop.kv;
                 wData.capacity = rTop.capacity + 1;
                 wenTop = 1'b1;
                 if (!rBotL.active && !rBotR.active) begin
                     done = DONE;
-                    wData.kv = KV_EMPTY;
+                    wData.kv = {KEY0,VAL0};  // will ned to change for min-pq
                     wData.active = 1'b0;
-                end else if (rBotL.active && rBotR.active) begin
-                    wData.kv = (rBotL.kv.key >= rBotR.kv.key) ? rBotL.kv : rBotR.kv;
-                    wData.active = 1'b1;
-                    endPos = (rBotL.kv.key >= rBotR.kv.key) ? 1'b0 : 1'b1;
-                    done = NEXT_LEVEL;
-                end else if (rBotL.active) begin
+                end
+                else if (L_gt_R) begin // compare accoutns for inactive children
                     wData.kv = rBotL.kv;
                     wData.active = 1'b1;
-                    endPos = 1'b0;
+                    endPos = left_child;
                     done = NEXT_LEVEL;
-                end else begin
+                end
+                else begin
                     wData.kv = rBotR.kv;
                     wData.active = 1'b1;
-                    endPos = 1'b1;
+                    endPos = right_child;
                     done = NEXT_LEVEL;
                 end
             end
@@ -164,7 +174,7 @@ always_comb begin
                     out = in;
                     done = NEXT_LEVEL;
                 end
-                else begin // in_gt_R
+                else begin // !in_gt_R
                     wData.kv = rBotR.kv;
                     endPos = right_child;
                     out = in;

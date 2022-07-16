@@ -18,7 +18,7 @@ endtask
 module pheap_pq_tb (pq_if.tb ti);
 
     task do_enq (input logic [KEY_WIDTH-1:0] key, input logic [VAL_WIDTH-1:0] val);
-        $display("enqueue [%d,%d]", key, val);
+        $display("enqueue <%d,%d>", key, val);
         ti.cb.kvi <= {key,val};
         ti.cb.enq <= 1;
         ti.cb.deq <= 0;
@@ -37,7 +37,7 @@ module pheap_pq_tb (pq_if.tb ti);
     endtask
 
     task do_enq_and_deq(input logic [KEY_WIDTH-1:0] key, input logic [VAL_WIDTH-1:0] val);
-        $display("enqueue-dequeue (NOT FULLY TESTED YET!)");
+        $display("enq_deq <%d,%d>", key, val);
         ti.cb.kvi <= {key,val};
         ti.cb.enq <= 1;
         ti.cb.deq <= 1;
@@ -45,6 +45,66 @@ module pheap_pq_tb (pq_if.tb ti);
         ti.cb.enq <= 0;
         ti.cb.deq <= 0;
     endtask
+
+    task empty_pq;
+        while (!ti.cb.empty) begin
+            do_deq;
+            repeat (4) @ti.cb;
+        end
+        repeat (4) @ti.cb;
+        print_pheap;
+    endtask
+
+
+    task enqueue_15;
+        const int ENQ_SPACE=4;
+        do_enq(15,15);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(11,11);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(9,9);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(8,8);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(35,35);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(20,20);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(6,6);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(12,12);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(18,18);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(60,60);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(5,5);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(40,40);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(17,17);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(85,85);
+        repeat (ENQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq(3,3);
+        repeat (8) @ti.cb;  // allow full completion
+        print_pheap;
+    endtask;
+
 
   initial begin
       @ti.cb;
@@ -54,24 +114,51 @@ module pheap_pq_tb (pq_if.tb ti);
       @ti.cb;
       ti.cb.rst <= 0;
       @ti.cb;
-      do_enq(13,11);
+      enqueue_15;
       repeat (4) @ti.cb;
+      //do_enq_and_deq(4,4);
+      do_enq_and_deq(4,4);
+      repeat(8) @ti.cb;
       print_pheap;
-      do_enq(12,15);
-      repeat (4) @ti.cb;
+      do_enq_and_deq(90,90);
+      repeat(8) @ti.cb;
       print_pheap;
-      do_enq(10,15);
-      repeat (4) @ti.cb;
+      do_enq_and_deq(55,55);
+      repeat(8) @ti.cb;
       print_pheap;
-      do_enq(15,15);
+      do_enq_and_deq(23,23);
+      repeat(8) @ti.cb;
+      print_pheap;
+      do_enq_and_deq(19,19);
+      repeat(8) @ti.cb;
+      print_pheap;
+      $stop;
+      empty_pq;
       repeat (8) @ti.cb;
       print_pheap;
-      do_enq(3,3);
-      repeat (8) @ti.cb;
-      print_pheap;
-      do_enq(9,9);
-      repeat (12) @ti.cb;
-      print_pheap;
+
+      //
+      // from yesterday 7/15
+      // @ti.cb;
+      // do_enq(13,11);
+      // repeat (4) @ti.cb;
+      // print_pheap;
+      // do_enq(12,15);
+      // repeat (4) @ti.cb;
+      // print_pheap;
+      // do_enq(10,15);
+      // repeat (4) @ti.cb;
+      // print_pheap;
+      // do_enq(15,15);
+      // repeat (8) @ti.cb;
+      // print_pheap;
+      // do_enq(3,3);
+      // repeat (8) @ti.cb;
+      // print_pheap;
+      // do_enq(9,9);
+      // repeat (12) @ti.cb;
+      // print_pheap;
+      //
       // do_enq_and_deq(6,6);
       // repeat (4) @ti.cb;
       // print_pheap;
