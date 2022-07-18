@@ -16,6 +16,7 @@ module levelRam
   parameter RAM_WIDTH = $bits(pheapTypes::entry_t);                  // Specify RAM data width
   parameter RAM_DEPTH = (2**(RAMLEVEL - 1));                  // Specify RAM depth (number of entries)
   //parameter INIT_FILE = {"C:/Users/mobil/ThesisIncludes/pheap/level", s.itoa(RAMLEVEL), ".data"};                       // Specify name/location of RAM initialization file if using one (leave blank if not)
+  //parameter INIT_FILE = "";
   parameter INIT_FILE = $sformatf("level%0d.data",RAMLEVEL);
   parameter START_LOC = 2**(RAMLEVEL - 1) - 1;
   parameter END_LOC = 2**(RAMLEVEL) - 2;
@@ -29,7 +30,7 @@ module levelRam
   // The following code either initializes the memory values to a specified file or to all zeros to match hardware
   generate
     if (INIT_FILE != "") begin: use_init_file
-      initial 
+      initial
         //$readmemb(INIT_FILE, level_ram, START_LOC, END_LOC);
         $readmemb(INIT_FILE, level_ram);
     end else begin: init_bram_to_zero
@@ -65,5 +66,4 @@ module levelRam
       for (clogb2=0; depth>0; clogb2=clogb2+1)
         depth = depth >> 1;
   endfunction
-endmodule			
-							
+endmodule

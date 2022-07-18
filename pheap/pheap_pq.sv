@@ -190,11 +190,4 @@ module pheap_pq (
 
 
 
-
-
-    task goofus();
-        $display("goofus!");
-    endtask
-
-
 endmodule

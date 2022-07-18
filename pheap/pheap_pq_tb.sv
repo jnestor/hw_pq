@@ -105,6 +105,54 @@ module pheap_pq_tb (pq_if.tb ti);
         print_pheap;
     endtask;
 
+    task replace_15;
+        const int ENQ_DEQ_SPACE=4;
+        do_enq_and_deq(33,33); //1
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(44,44); //2
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(22,22); //3
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(99,99); //4
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(88,88); //5
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(11,11); //6
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(99,99); //7
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(101,101); //8
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(28,28); //9
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(7,7); //10
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(222,222); //11
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(37,37); //12
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(13,13); //13
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(114,114); //14
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+        do_enq_and_deq(215,215); //15
+        repeat (ENQ_DEQ_SPACE) @ti.cb;
+        print_pheap;
+    endtask
 
   initial begin
       @ti.cb;
@@ -116,22 +164,7 @@ module pheap_pq_tb (pq_if.tb ti);
       @ti.cb;
       enqueue_15;
       repeat (4) @ti.cb;
-      //do_enq_and_deq(4,4);
-      do_enq_and_deq(4,4);
-      repeat(8) @ti.cb;
-      print_pheap;
-      do_enq_and_deq(90,90);
-      repeat(8) @ti.cb;
-      print_pheap;
-      do_enq_and_deq(55,55);
-      repeat(8) @ti.cb;
-      print_pheap;
-      do_enq_and_deq(23,23);
-      repeat(8) @ti.cb;
-      print_pheap;
-      do_enq_and_deq(19,19);
-      repeat(8) @ti.cb;
-      print_pheap;
+      replace_15;
       $stop;
       empty_pq;
       repeat (8) @ti.cb;

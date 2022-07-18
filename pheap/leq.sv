@@ -83,6 +83,12 @@ always_comb begin
             if (op == LEQ) begin
                 if (!rTop.active) begin
                     wData.active = 1'b1;
+                    // this bit of obtusenss eliminates the need to initialize RAM with capacity values
+                    // if (!rTop.active) begin
+                    //     wData.capacity = (2**(LEVELS-LEVEL+1))-1;
+                    //     $display("initializing capacity LEVEL %d at %d",LEVEL,wData.capacity);
+                    // end
+                    // else
                     wData.capacity = rTop.capacity - 1;
                     wData.kv = in_reg;
                     wenTop = 1'b1;
@@ -103,6 +109,9 @@ always_comb begin
                     end
                     // the next two lines are not in the B&L paper, but OK
                     // B&L just test capacity & leave it at that
+                    // if (!rBotR.active) endPos = right_child;
+                    // else if (!rBotL.active) endPos = left_child;
+                    // else
                     if (rBotL.capacity != 0 && rBotR.capacity != 0)
                         endPos = (!L_gt_R) ? left_child : right_child;
                     else if (rBotL.capacity != 0)
