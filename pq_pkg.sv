@@ -23,7 +23,7 @@ package pq_pkg;
 
     typedef enum logic {MIN_PQ, MAX_PQ} pq_type_t;
 
-    parameter pq_type_t PQ_TYPE = MIN_PQ;
+    parameter pq_type_t PQ_TYPE = MAX_PQ;
 
     parameter [KEY_WIDTH-1:0] KEYMAX = '1;
     parameter [KEY_WIDTH-1:0] KEY0 = '0;
@@ -34,7 +34,7 @@ package pq_pkg;
     // we are implemeting a MIN_PQ or MAX_PQ.
     // CAUTION: The KEYINF sentinel value CANNOT be used as a key during operation
     parameter KEYINF = (PQ_TYPE == MIN_PQ) ? KEYMAX : KEY0;
-    // KEYNEGINF represenets the "lowest" priority and is used as a sentinel
+    // KEYNEGINF represents the "lowest" priority and is used as a sentinel
     // value by the ra_pq_s priority queue.  Its actual value depends on
     // whether we are implementing an MIN_PQ or MAX_PQ.
     // CAUTION: The KEYNEGINF sentinel value CANNOT be used as a key during
@@ -52,9 +52,15 @@ package pq_pkg;
         $write("[K=%d V=%d]", kv.key, kv.value);
     endtask
 
-    function cmp_kv_gt(input kv_t k1, k2);
-        if (PQ_TYPE==MAX_PQ) return (k1.key > k2.key);
-        else return (k1.key < k2.key);
+    // Compare keys to determine "highest" priority
+    // paremeterized by PQ_TYPE
+    function logic cmp_kv_gt(input kv_t k1, k2);
+        if (PQ_TYPE==MAX_PQ) begin
+            return (k1.key > k2.key);
+        end
+        else begin
+            return (k1.key < k2.key);
+        end
     endfunction
 
 endpackage

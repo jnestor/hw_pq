@@ -7,6 +7,10 @@
 //-----------------------------------------------------------------------------
 // Description   : Shift-register-based PQ that can do enqueue dequeue,
 //                 and replace (simultaneous enqueue and dequeue)
+// NOTE: this design uses the value with the "highest" priority
+// '1 for a MAX_PQ and '0 for a MIN_PQ as sentinel values to
+// indicate that a stage is empty.  For this reason these values
+// CANNOT be used das keys for inserted kv items
 //-----------------------------------------------------------------------------
 
 import pq_pkg::*;

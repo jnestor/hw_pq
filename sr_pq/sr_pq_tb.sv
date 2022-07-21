@@ -40,7 +40,7 @@ module sr_pq_tb (pq_if.tb ti);
       // @ti.cb;
       do_enq(8,14);
       @ti.cb;
-      do_enq(15,15);
+      do_enq(14,14);
       @ti.cb;
       do_enq(9,10);
       do_enq(9,11);
