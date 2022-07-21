@@ -26,6 +26,7 @@ module sr_pq_stage (
     parameter STAGE = 0;  // should be overriden when instantiating
 
     assign ki_lt_k = (kvi.key < kv.key);
+    //assign ki_lt_k = cmp_kv_gt(kv.key, kvi.key);
 
     always_ff @(posedge clk)
     begin

@@ -17,17 +17,29 @@ package pq_pkg;
 
     // struct data type for <key,value> pairs
 
-    parameter KEY_WIDTH=8;
-    parameter VAL_WIDTH=8;
+    parameter KEY_WIDTH=4;
+    parameter VAL_WIDTH=4;
     parameter PQ_CAPACITY=15;
-
-    parameter [KEY_WIDTH-1:0] KEYINF = '1;
-    parameter [KEY_WIDTH-1:0] KEY0 = '0;
-    parameter [VAL_WIDTH-1:0] VAL0 = '0;
 
     typedef enum logic {MIN_PQ, MAX_PQ} pq_type_t;
 
-    parameter pq_type_t PQ_TYPE = MAX_PQ;
+    parameter pq_type_t PQ_TYPE = MIN_PQ;
+
+    parameter [KEY_WIDTH-1:0] KEYMAX = '1;
+    parameter [KEY_WIDTH-1:0] KEY0 = '0;
+    parameter [VAL_WIDTH-1:0] VAL0 = '0;
+
+    // KEYINF represents the "highest" priority and is used as a sentinel
+    // value by some implementations.  Its actual value depends on whether
+    // we are implemeting a MIN_PQ or MAX_PQ.
+    // CAUTION: The KEYINF sentinel value CANNOT be used as a key during operation
+    parameter KEYINF = (PQ_TYPE == MIN_PQ) ? KEYMAX : KEY0;
+    // KEYNEGINF represenets the "lowest" priority and is used as a sentinel
+    // value by the ra_pq_s priority queue.  Its actual value depends on
+    // whether we are implementing an MIN_PQ or MAX_PQ.
+    // CAUTION: The KEYNEGINF sentinel value CANNOT be used as a key during
+    // operation of the sr_pq_s module
+    parameter KEYNEGINF = (PQ_TYPE == MIN_PQ) ? KEY0 : KEYMAX;
 
     typedef struct packed {
     logic [KEY_WIDTH-1:0] key;    // priority value

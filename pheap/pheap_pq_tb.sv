@@ -57,7 +57,7 @@ module pheap_pq_tb (pq_if.tb ti);
 
 
     task enqueue_15;
-        const int ENQ_SPACE=4;
+        const int ENQ_SPACE=8;
         do_enq(15,15);
         repeat (ENQ_SPACE) @ti.cb;
         print_pheap;

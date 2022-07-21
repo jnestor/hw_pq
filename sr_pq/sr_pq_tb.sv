@@ -40,15 +40,14 @@ module sr_pq_tb (pq_if.tb ti);
       // @ti.cb;
       do_enq(8,14);
       @ti.cb;
-      do_enq_and_deq(2,12);
+      do_enq(15,15);
       @ti.cb;
       do_enq(9,10);
       do_enq(9,11);
       do_enq(9,12);
       @ti.cb;  // something funny here!
       do_enq_and_deq(1,11);
-      repeat (4) do_deq();
-      do_enq_and_deq(11,1);
+      repeat (5) do_deq();
       @ti.cb;
 //      do_enq (12,12);
 //      @(ti.cb);

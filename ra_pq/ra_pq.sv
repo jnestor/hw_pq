@@ -8,6 +8,7 @@
 // Description   : "Register Array" min-priority queue patterened after
 //                  Huang, Lim, and Cong, FPL 2014.  Note that
 //                  this functions like a pipelined odd-even sort.
+//                  This version is exteneded to do enqueue as well as replace
 //-----------------------------------------------------------------------------
 
 //`include "../pk_pkg.sv"
