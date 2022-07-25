@@ -35,6 +35,14 @@ module pheap_pq (
     assign di.empty = empty;
     assign di.busy = busy;  // always done in one cycle
 
+    // provide a warning for PQ_CAPACITY
+    initial begin
+        assert  (PQ_CAPACITY == 2**LEVELS-1) else begin
+            $warning("PQ_CAPACITY (%d) in pheap should be a power of 2 minus one", PQ_CAPACITY);
+            $warning("Actual capacity is %d", 2**LEVELS-1);
+        end
+    end
+
 //    (input logic clk, rst, valid, [31:0] priorityIn, pheapTypes::opcode_t toperation,
 //    output logic rdy, [31:0] priorityOut, valid_out
 //    );
@@ -149,17 +157,17 @@ module pheap_pq (
         if (enq) begin
             start[1] <= 1;
             opArray[1].kv <= kvi;
-            opArray[1].levelOp <= LEQ;
+            opArray[1].levelOp <= LENQ;
         end
         else if (deq) begin
             start[1] <= 1;
             opArray[1].kv <= KV_EMPTY;
-            opArray[1].levelOp = DEQ;
+            opArray[1].levelOp = LDEQ;
         end
         else if (replace) begin
             start[1] <= 1;
             opArray[1].kv <= kvi;
-            opArray[1].levelOp = ENQ_DEQ;
+            opArray[1].levelOp = LREPL;
         end
         else start[1] <= 0;
 

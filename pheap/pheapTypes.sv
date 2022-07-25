@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------
 // Description   : This package declares types and data structures
 // used in the pheap implementation.
+// NOTE: PQ_CAPACITY should be set to a power of 2 minus one
 //-----------------------------------------------------------------------------
 
 `ifndef PHEAPTYPES
@@ -17,14 +18,14 @@ package pheapTypes;
 
     import pq_pkg::*;
 
-    parameter LEVELS = $clog2(PQ_CAPACITY);
+    parameter LEVELS = $clog2(PQ_CAPACITY+1);
 
     // done_t indicates the status of each level
     typedef enum logic [1:0] {DONE, NEXT_LEVEL, WAIT} done_t;
 
     // opcode_t specifies the operation to be performed by each level
     // FREE (do nothing), LEQ (enqueue), or DEQ (dequeue)
-    typedef enum logic [1:0] {FREE, LEQ, DEQ, ENQ_DEQ} opcode_t;
+    typedef enum logic [1:0] {FREE, LENQ, LDEQ, LREPL} opcode_t;
 
     // type for priority value need to modify this to include a data value, too
     //typedef logic [31:0] pValue;

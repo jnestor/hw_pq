@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Module Name   : leq1
+// Module Name   : leq1 - level manager for top level
 // Project       : pheap - pipelined heap priority queue implementation
 //-----------------------------------------------------------------------------
 // Author        : Ethan Miller (revised by John Nestor)
@@ -89,8 +89,8 @@ always_comb begin
         SET_OUT: begin
             next = READ_MEM;
             active = 1;
-            if (op == LEQ) begin
-                if (~rTop.active) begin
+            if (op == LENQ) begin
+                if (!rTop.active) begin
                     wData.active = 1'b1;
                     wData.capacity = rTop.capacity - 1;
                     wData.kv = in; //gotta fix this - write the prioritity, decremented capacity and active
@@ -110,17 +110,19 @@ always_comb begin
                         wData.kv = rTop.kv;
                         wenTop = 1'b1;
                     end
-                    // the next two lines are not in the B&L paper, but OK
-                    // B&L just test capacity & leave it at that
-                    if (rBotL.capacity != 0 && rBotR.capacity != 0)
-                        endPos = (!L_gt_R) ? 1'b0 : 1'b1;
+                    // chose which subtree to push down to
+                    // the L_gt_R test is not in the B&L paper
+                    if (!rBotR.active) endPos = right_child;
+                    else if (!rBotL.active) endPos = left_child;
+                    else if ((rBotL.capacity != 0) && (rBotR.capacity != 0))
+                        endPos = (!L_gt_R) ? left_child : right_child;
                     else if (rBotL.capacity != 0)
-                        endPos = 1'b0;
+                        endPos = left_child;
                     else
-                        endPos = 1'b1;
+                        endPos = right_child;
                     done = NEXT_LEVEL;
                 end
-            end else if (op == DEQ) begin
+            end else if (op == LDEQ) begin
                 // if there at least one active child, replace
                 // rTop with the child with the largest value
                 out = rTop.kv;
@@ -144,9 +146,9 @@ always_comb begin
                     done = NEXT_LEVEL;
                 end
             end
-            else if (op == ENQ_DEQ) begin
+            else if (op == LREPL) begin
                 // the top will always be overwritten here, but if
-                // he new value is < either of the the chldren
+                // the new value is < either of the the chldren
                 // we want to write the biggest child as the new top
                 // and pass ENQ_DEQ to next level
                 wData.active = 1;

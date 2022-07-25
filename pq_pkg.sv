@@ -17,8 +17,8 @@ package pq_pkg;
 
     // struct data type for <key,value> pairs
 
-    parameter KEY_WIDTH=4;
-    parameter VAL_WIDTH=4;
+    parameter KEY_WIDTH=8;
+    parameter VAL_WIDTH=8;
     parameter PQ_CAPACITY=15;
 
     typedef enum logic {MIN_PQ, MAX_PQ} pq_type_t;

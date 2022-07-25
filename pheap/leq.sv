@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Module Name   : leq
+// Module Name   : leq -level manager
 // Project       : pheap - pipelined heap priority queue implementation
 //-----------------------------------------------------------------------------
 // Author        : Ethan Miller (revised by John Nestor)
@@ -34,6 +34,8 @@ logic [LEVEL-1:0] left_child, right_child;
 assign left_child  = {startPos, 1'b0};
 assign right_child = {startPos, 1'b1};
 
+// max capacity of node at thsi level and subtree
+const logic [LEVELS-LEVEL:0] LEVEL_MAX_CAPACITY = '1;
 
 typedef enum logic {READ_MEM, SET_OUT} states_t;
 states_t state, next;
@@ -80,7 +82,7 @@ always_comb begin
         SET_OUT: begin
             next = READ_MEM;
             active = 1;
-            if (op == LEQ) begin
+            if (op == LENQ) begin
                 if (!rTop.active) begin
                     wData.active = 1'b1;
                     // this bit of obtusenss eliminates the need to initialize RAM with capacity values
@@ -89,7 +91,7 @@ always_comb begin
                     //     $display("initializing capacity LEVEL %d at %d",LEVEL,wData.capacity);
                     // end
                     // else
-                    wData.capacity = rTop.capacity - 1;
+                    wData.capacity = LEVEL_MAX_CAPACITY - 1;
                     wData.kv = in_reg;
                     wenTop = 1'b1;
                     done = DONE;
@@ -107,12 +109,11 @@ always_comb begin
                         wData.kv = rTop.kv;
                         wenTop = 1'b1;
                     end
-                    // the next two lines are not in the B&L paper, but OK
-                    // B&L just test capacity & leave it at that
-                    // if (!rBotR.active) endPos = right_child;
-                    // else if (!rBotL.active) endPos = left_child;
-                    // else
-                    if (rBotL.capacity != 0 && rBotR.capacity != 0)
+                    // chose which subtree to push down to
+                    // the L_gt_R test is not in the B&L paper
+                    if (!rBotR.active) endPos = right_child;
+                    else if (!rBotL.active) endPos = left_child;
+                    else if ((rBotL.capacity != 0) && (rBotR.capacity != 0))
                         endPos = (!L_gt_R) ? left_child : right_child;
                     else if (rBotL.capacity != 0)
                         endPos = left_child;
@@ -121,7 +122,7 @@ always_comb begin
                     done = NEXT_LEVEL;
                 end
             end
-            else if (op == DEQ) begin
+            else if (op == LDEQ) begin
                 // if there at least one active child, replace
                 // rTop with the child with the largest value
                 out = rTop.kv;
@@ -145,7 +146,7 @@ always_comb begin
                     done = NEXT_LEVEL;
                 end
             end
-            else if (op == ENQ_DEQ) begin
+            else if (op == LREPL) begin
                 // the top will always be overwritten here, but if
                 // he new value is either in_reg or one of the  chldren
                 // we want to write the biggest child as the new top

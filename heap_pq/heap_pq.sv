@@ -26,20 +26,30 @@ module heap_pq (
     assign di.empty = empty;
     assign di.busy = !idle;  // always done in one cycle
 
+    localparam  LEVELS = $clog2(PQ_CAPACITY+1);
+
+    // provide a warning for PQ_CAPACITY
+    initial begin
+        assert  (PQ_CAPACITY == 2**LEVELS-1) else begin
+            $warning("PQ_CAPACITY (%d) in pheap should be a power of 2 minus one", PQ_CAPACITY);
+            $warning("Actual capacity is %d", 2**LEVELS-1);
+        end
+    end
+
     // index of last item in heap
-    logic [$clog2(PQ_CAPACITY)-1:0] heap_size, heap_size_next;
+    logic [LEVELS-1:0] heap_size, heap_size_next;
 
     assign empty = (heap_size == 0);
 
     assign full = (heap_size == PQ_CAPACITY);
 
-    logic [$clog2(PQ_CAPACITY)-1:0] ni, ni_next, nj, nj_next, nmin, nmin_next;
+    logic [LEVELS-1:0] ni, ni_next, nj, nj_next, nmin, nmin_next;
 
     kv_t i_kv, i_kv_next, j_kv, j_kv_next, min_kv, min_kv_next;
 
     // memory signals
     logic [KEY_WIDTH+VAL_WIDTH-1:0] din, dout;
-    logic [$clog2(PQ_CAPACITY)-1:0] addr;
+    logic [LEVELS-1:0] addr;
     logic we;
     logic aov;  // overflow bit when calculating left, right children
 
@@ -60,15 +70,18 @@ module heap_pq (
 
     states_t state, next;
 
-    function [$clog2(PQ_CAPACITY):0] left(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+    // note extra bit required for child functions
+    // since they are in the next level of the tree
+
+    function [LEVELS:0] left(logic [LEVELS-1:0] ni);
         left = ni << 1;
     endfunction
 
-    function [$clog2(PQ_CAPACITY):0] right(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+    function [LEVELS:0] right(logic [LEVELS-1:0] ni);
         right = (ni << 1) | 1;
     endfunction
 
-    function [$clog2(PQ_CAPACITY)-1:0] parent(logic [$clog2(PQ_CAPACITY)-1:0] ni);
+    function [LEVELS-1:0] parent(logic [LEVELS-1:0] ni);
         parent = ni >> 1;
     endfunction
 
