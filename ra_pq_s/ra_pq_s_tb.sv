@@ -50,6 +50,9 @@ module ra_pq_s_tb (pq_rd_if.tb ti);
       @ti.cb;
       repeat(3) do_deq();
       @ti.cb;
+      do_replace(23,23);
+      do_replace(17,25);
+      repeat(4) @ti.cb;
      $stop;
   end
 

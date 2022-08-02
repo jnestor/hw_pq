@@ -16,10 +16,16 @@ module ra_pq_sort2(
     );
 
     always_comb begin
-        if (a.key < b.key) begin
+//        if (cmp_kv_gt(a,b)) begin
+       if ((PQ_TYPE==MIN_PQ) && (a.key < b.key)) begin
             maxv = b;
             minv = a;
-        end else begin
+        end
+        else if ((PQ_TYPE==MAX_PQ) && (a.key > b.key)) begin
+            maxv = b;
+            minv = a;
+        end
+        else begin
             maxv = a;
             minv = b;
         end

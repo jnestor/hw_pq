@@ -19,7 +19,7 @@ package pq_pkg;
 
     parameter KEY_WIDTH=8;
     parameter VAL_WIDTH=8;
-    parameter PQ_CAPACITY=15;
+    parameter PQ_CAPACITY=4;
 
     typedef enum logic {MIN_PQ, MAX_PQ} pq_type_t;
 
@@ -55,11 +55,23 @@ package pq_pkg;
     // Compare keys to determine "highest" priority
     // paremeterized by PQ_TYPE
     function logic cmp_kv_gt(input kv_t k1, k2);
+        //$display("cmp_kv_gt(%d,%d)", k1.key, k2.key);
         if (PQ_TYPE==MAX_PQ) begin
             return (k1.key > k2.key);
         end
         else begin
             return (k1.key < k2.key);
+        end
+    endfunction
+
+    // Compare keys to determine "lowest" priority
+    // paremeterized by PQ_TYPE
+    function logic cmp_kv_lt(input kv_t k1, k2);
+        if (PQ_TYPE==MAX_PQ) begin
+            return (k1.key < k2.key);
+        end
+        else begin
+            return (k1.key > k2.key);
         end
     endfunction
 

@@ -1,6 +1,14 @@
-// Heap implementation of a priority queue
-//
-//
+//-----------------------------------------------------------------------------
+// Package Name  : heap_pq - heap-based priority queue
+// Project       : HWPQ: Hardware Priority Queue Study
+//-----------------------------------------------------------------------------
+// Author        : John Nestor
+// Created       : June 15, 2021
+//-----------------------------------------------------------------------------
+// Description   : Heap-based piority queue with a single heap memory in BRAM
+//                 controlled by a state machine.  Set PQ_TYPE to either
+//                 MIN_PQ or MAX_PQ to specify type.
+//-----------------------------------------------------------------------------
 
 import pq_pkg::*;
 
@@ -155,7 +163,8 @@ module heap_pq (
                 end
             end
             ENQ_SWP: begin
-                if (dout_kv.key < i_kv.key) next = IDLE;  // heap property satisfied
+                //if (dout_kv.key < i_kv.key) next = IDLE;  // heap property satisfied
+                if (cmp_kv_gt(i_kv, dout_kv)) next = IDLE;  // heap property satisfied
                 else begin
                     j_kv_next = dout;
                     addr = parent(ni);
@@ -202,7 +211,8 @@ module heap_pq (
                 else next = HPFY_RDL;
             end
             HPFY_RDL: begin
-                if (dout_kv.key < min_kv.key) begin
+                //if (dout_kv.key < min_kv.key) begin
+                if (cmp_kv_gt(min_kv, dout_kv)) begin
                     nmin_next = left(ni);
                     min_kv_next = dout_kv;
                 end
@@ -211,7 +221,8 @@ module heap_pq (
                 else next = HPFY_RDR;
             end
             HPFY_RDR: begin
-                if (dout_kv.key < min_kv.key) begin
+                //if (dout_kv.key < min_kv.key) begin
+                if (cmp_kv_gt(min_kv, dout_kv)) begin
                     nmin_next = right(ni);
                     min_kv_next = dout_kv;
                 end

@@ -31,6 +31,7 @@ module ra_pq_tb (pq_if.tb ti);
     endtask
 
     task do_enq_and_deq(input logic [KEY_WIDTH-1:0] key, input logic [VAL_WIDTH-1:0] val);
+        $display("enq_deq <%d,%d>", key, val);
         ti.cb.kvi <= {key,val};
         ti.cb.enq <= 1;
         ti.cb.deq <= 1;
@@ -39,15 +40,24 @@ module ra_pq_tb (pq_if.tb ti);
         ti.cb.deq <= 0;
     endtask
 
+    task empty_pq;
+        while (!ti.cb.empty) begin
+            do_deq;
+        end
+        repeat (4) @ti.cb;
+    endtask
+
   initial begin
       @ti.cb;
       ti.cb.rst <= 1;
       ti.cb.enq <= 0;
       ti.deq <= 0;
+      ti.kvi = {0,0};
 
       @ti.cb;
       ti.cb.rst <= 0;
-      // @ti.cb;
+      $stop;
+      @ti.cb;
       do_enq(8,14);
       @ti.cb;
       do_enq(11,11);
@@ -62,6 +72,7 @@ module ra_pq_tb (pq_if.tb ti);
       do_enq(10,10);
       do_enq_and_deq(12,12);
       @ti.cb;
+      empty_pq;
 //      do_enq_and_deq(2,12);
 //      @ti.cb;
 //      do_enq(9,10);

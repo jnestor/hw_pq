@@ -12,7 +12,7 @@
 //`include "../pk_pkg.sv"
 import pq_pkg::*;
 
-module sr_pq_top;
+module ra_pq_top;
 
     logic clk;
 

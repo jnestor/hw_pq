@@ -45,6 +45,14 @@ module ra_pq_r_tb (pq_if.tb ti);
         ti.cb.deq <= 0;
     endtask
 
+
+    task empty_pq;
+            while (!ti.cb.empty) begin
+                do_deq;
+            end
+            repeat (4) @ti.cb;
+    endtask
+
   initial begin
       @ti.cb;
       ti.cb.rst <= 1;
@@ -72,32 +80,10 @@ module ra_pq_r_tb (pq_if.tb ti);
       do_enq(10,10);
       do_enq(11,1);
       do_enq(1,1);
-      do_deq;
-      // do_enq(10,10);
-      // do_enq_and_deq(12,12);
-      // @ti.cb;
-//      do_enq_and_deq(2,12);
-//      @ti.cb;
-//      do_enq(9,10);
-//      do_enq(9,11);
-//      do_enq(9,12);
-//      @ti.cb;  // something funny here!
-//      do_enq_and_deq(1,11);
-//      repeat (4) do_deq();
-//      do_enq_and_deq(11,1);
+      empty_pq;
       @ti.cb;
       @ti.cb;
-//      do_enq (12,12);
-//      @(ti.cb);
-//      do_enq(3,13);
-//      do_enq(10,10);
-//      @ti.cb;  // shoud register full here
-//      do_deq();
-//      do_enq(2,13);
-//      @ti.cb;  // should register full again
-//      do_enq_and_deq(1,11);
-//      @ti.cb;
-//      repeat(4) do_deq();
+
      $stop;
   end
 
