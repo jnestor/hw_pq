@@ -14,35 +14,45 @@ import pq_pkg::*;
 module ra_pq_r_tb (pq_if.tb ti);
 
     task do_enq (input logic [KEY_WIDTH-1:0] key, input logic [VAL_WIDTH-1:0] val);
-        if (ti.cb.busy == 0) begin
-            @ti.cb;  // wait because next cycle will be even
-        end
+        // while (ti.cb.busy == 1) begin
+        //     @ti.cb;
+        // end
+        assert (ti.cb.full==0)
+        else $warning("do_enq: attempting when queue full at %t", $time);
         ti.cb.kvi <= {key,val};
         ti.cb.enq <= 1;
         ti.cb.deq <= 0;
+        do begin
+            @ti.cb;
+        end while (ti.cb.busy==0);
         @ti.cb;
         ti.cb.enq <=0;
+        @ti.cb;
     endtask
 
     task do_deq();
-        // while (ti.cb.ovalid==0) @ti.cb; // wait until there is something to remove
-        assert(ti.cb.empty==0);  // wait for an odd cycle
-        if (ti.cb.busy == 0) @ti.cb;
+        @(ti.cb iff ti.cb.busy==0);
+        //while (ti.cb.busy == 1) @ti.cb;
+        assert(ti.cb.empty==0)  // squawk if we try to deqeue when empty
+        else $warning("do_deq: attempting when queue empty at %t", $time);
         ti.cb.enq <= 0;
         ti.cb.deq <= 1;
         @ti.cb;
         ti.cb.deq <= 0;
+        @ti.cb;
     endtask
 
     task do_enq_and_deq(input logic [KEY_WIDTH-1:0] key, input logic [VAL_WIDTH-1:0] val);
-        if (ti.cb.busy == 0) @ti.cb; // wait for an odd cycle
+        //while (ti.cb.busy == 1) @ti.cb;
+        @(ti.cb iff ti.cb.busy==0);
+        // no need to check empty & full since it can complete either way
         ti.cb.kvi <= {key,val};
-        assert(ti.cb.empty==0);  // wait for an odd cycle
         ti.cb.enq <= 1;
         ti.cb.deq <= 1;
         @ti.cb;
         ti.cb.enq <= 0;
         ti.cb.deq <= 0;
+        @(ti.cb);
     endtask
 
 
@@ -61,9 +71,9 @@ module ra_pq_r_tb (pq_if.tb ti);
 
       @ti.cb;
       ti.cb.rst <= 0;
-      // @ti.cb;
-      do_enq(8,14);
       @ti.cb;
+      do_enq(8,14);
+      repeat (4) @ti.cb;
       do_enq(11,11);
       @ti.cb;
       @ti.cb;

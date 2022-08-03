@@ -35,8 +35,7 @@ module ra_pq_s_tb (pq_rd_if.tb ti);
       ti.cb.rst <= 1;
       ti.cb.replace <= 0;
       ti.deq <= 0;
-
-      @ti.cb;
+      repeat (4) @ti.cb;
       ti.cb.rst <= 0;
       // @ti.cb;
       do_replace(8,14);

@@ -38,7 +38,7 @@ import pq_pkg::*;
         clocking cb @(posedge clk);
             default output #1;
             output  #1 rst, enq, kvi;
-            input full, busy, empty;
+            input #0 full, busy, empty;
             output #1 kvo;
             output  #1 deq;
         endclocking

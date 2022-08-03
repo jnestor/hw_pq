@@ -23,7 +23,7 @@ package pq_pkg;
 
     typedef enum logic {MIN_PQ, MAX_PQ} pq_type_t;
 
-    parameter pq_type_t PQ_TYPE = MAX_PQ;
+    parameter pq_type_t PQ_TYPE = MIN_PQ;
 
     parameter [KEY_WIDTH-1:0] KEYMAX = '1;
     parameter [KEY_WIDTH-1:0] KEY0 = '0;

@@ -29,8 +29,8 @@ module ra_pq_s (
 
 
     logic full, empty, replace, deq;
-    assign replace = di.replace;
-    assign deq = di.deq;
+    assign replace = di.replace && !busy;
+    assign deq = di.deq && !busy;
 
     assign di.full = full;
     assign di.empty = empty;
@@ -55,7 +55,11 @@ module ra_pq_s (
     // it technically isn't empty although this is a little counterintuitive
     assign empty = (kvo.key == KEYINF);  // true when the queue is full of "dummy" KEYINF values
 
-    assign full = (kvo.key != KEYNEGINF);  // true when all iniital "dummy" KEY0 values have been replaced
+    // again, this signal behaves in a counterintuitive fashion when
+    // the only operations we support are replace & dequeue
+    // full is true when we have replaced all the initial KEYNEGINF dummy elements
+    // but if kvo.key == KEYINF the queue is empty ans should not register as full
+    assign full = (kvo.key != KEYNEGINF) && (kvo.key != KEYINF);
 
     genvar i;
 
