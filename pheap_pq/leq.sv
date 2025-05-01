@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------
+.//-----------------------------------------------------------------------------
 // Module Name   : leq -level manager
 // Project       : pheap - pipelined heap priority queue implementation
 //-----------------------------------------------------------------------------
@@ -18,11 +18,12 @@ module leq
     #(parameter LEVEL=2)
     (
     input logic clk, rst, start,
-    input logic [LEVEL - 2:0] startPos,
-    input kv_t in,
-    input pheapTypes::entry_t rTop, rBotL, rBotR,
-    input pheapTypes::opcode_t op,
-    output logic wenTop, active,
+    input logic [LEVEL - 2:0] startPos,             // index of select node at this level
+    input kv_t in,                                  // node to be inserted or to replace
+    input pheapTypes::entry_t rTop, rBotL, rBotR,   // nodes read from level RAM
+    input pheapTypes::opcode_t op,                  // operation to be performed
+    output logic wenTop,                            // write enable to write new top node
+    output logic active,
     output pheapTypes::done_t done,
     output logic [LEVEL - 2:0] raddrTop, wraddrTop,
     output logic [LEVEL - 1:0] raddrBot, endPos,
